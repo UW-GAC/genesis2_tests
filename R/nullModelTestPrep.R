@@ -47,14 +47,23 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
          }   
         
         if (!nullmod$hetResid) { ## family is "gaussian", cholSigmaInv is a scalar.
-            C <- nullmod$cholSigmaInv
-        }	  		
-        CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector
-        # Mt <- diag(C) - tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
+            C <- nullmod$cholSigmaInv        
+        }	
+          		
+        CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector  
         Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
         diag(Mt) <- diag(Mt) + C     
-        resid <- resid/nullmod$varComp
+        
+        ## prepare resids for testing
+        if (nullmod$hetResid){
+        	resid <- as.vector(Mt %*% crossprod(Mt, Y))
+        } else{
+        	resid <- resid/nullmod$varComp
+        }
+        
     }	
+    
+
 	
     # phenotype adjusted for the covariates/correlation structure
     Ytilde <- crossprod(Mt, Y)
