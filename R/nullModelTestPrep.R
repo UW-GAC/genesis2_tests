@@ -52,7 +52,8 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector
         # Mt <- diag(C) - tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
         Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
-        diag(Mt) <- diag(Mt) + C
+        diag(Mt) <- diag(Mt) + C     
+        resid <- resid/nullmod$varComp
     }	
 	
     # phenotype adjusted for the covariates/correlation structure
