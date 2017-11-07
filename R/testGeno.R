@@ -22,7 +22,7 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     }
     
     if (test == "Score"){
-        res <- .testGenoSingleVarScore(nullprep$Mt, G, nullprep$Ytilde)
+        res <- .testGenoSingleVarScore(nullprep$Mt, G, nullprep$resid)
     }
     
     if (test == "BinomiRare"){
