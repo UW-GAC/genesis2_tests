@@ -52,7 +52,7 @@ expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp[2:3]) < 1e-6))
 expect_true(all(abs(nullmod$varCompCov - lmm.genesis$varCompCov[2:3, 2:3]) < 1e-6))  
 expect_equal(nullmod$family$family, lmm.genesis$family$family)
 expect_null(nullmod$zeroFLAG)
-expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-6))
+expect_true(all(abs(nullmod$cholSigmaInv - diag(lmm.genesis$cholSigmaInv)) < 1e-6))
 expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-6))
 
 
