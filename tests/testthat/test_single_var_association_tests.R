@@ -20,7 +20,7 @@ test_that("singleVarTest", {
 	
 	res.lm <- test.wald
 	for (i in 1:ncol(geno)){
-		lm.temp <- lm(y ~ -1 + X + geno[,i], weights = c(rep(1/nullmod$varComp[1], n/2), 1/rep(nullmod$varComp[1], n/2)))
+		lm.temp <- lm(y ~ -1 + X + geno[,i], weights = c(rep(1/nullmod$varComp[1], n/2), 1/rep(nullmod$varComp[2], n/2)))
 		res.lm[i,] <- summary(lm.temp)$coef[4,]
 	}
 	
