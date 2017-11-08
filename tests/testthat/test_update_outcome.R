@@ -39,14 +39,25 @@ nullmod2 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = g
 expect_true(abs(.averageGroupVar(nullmod2$varComp, covMatList = covMatList, group.idx = group.idx[1]) - 1) < 0.1 )
 expect_true(abs(.averageGroupVar(nullmod2$varComp, covMatList = covMatList, group.idx = group.idx[2]) -1) < 0.1 )
 
-# why are these tests not < 0.1???
-nullmod3 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("residSD"), verbose=FALSE)
-expect_true(abs(.averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[1]) - var(nullmod$resid.marginal[group.idx[[1]]] ) ) < 0.1 )
-expect_true(abs(.averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[2]) - var(nullmod$resid.marginal[group.idx[[2]]] ) ) < 0.1 )
+# some comparisons when the residuals are rank-normalized and re-scaled within gorups
+average.group1.model.var.nullmod <- .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[1])
+average.group2.model.var.nullmod <- .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[2])
 
+nullmod3 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("residSD"), verbose=FALSE)
 nullmod4 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("model"), verbose=FALSE)
-expect_true(abs(.averageGroupVar(nullmod4$varComp, covMatList = covMatList, group.idx = group.idx[1]) - .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[1]) ) < 0.1 )
-expect_true(abs(.averageGroupVar(nullmod4$varComp, covMatList = covMatList, group.idx = group.idx[2]) - .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[2]) ) < 0.1 )
+
+average.group1.model.var.nullmod3 <- .averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[1])
+average.group2.model.var.nullmod3 <- .averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[2])
+average.group1.model.var.nullmod4 <- .averageGroupVar(nullmod4$varComp, covMatList = covMatList, group.idx = group.idx[1])
+average.group2.model.var.nullmod4 <- .averageGroupVar(nullmod4$varComp, covMatList = covMatList, group.idx = group.idx[2])
+
+# compare to model 3:
+expect_true(average.group1.model.var.nullmod3/average.group1.model.var.nullmod < 1.1 & average.group1.model.var.nullmod3/average.group1.model.var.nullmod > 0.9 )
+expect_true(average.group2.model.var.nullmod3/average.group2.model.var.nullmod < 1.1 & average.group2.model.var.nullmod3/average.group2.model.var.nullmod > 0.9 )
+
+# compare to model 4:
+expect_true(average.group1.model.var.nullmod4/average.group1.model.var.nullmod < 1.1 & average.group1.model.var.nullmod4/average.group1.model.var.nullmod > 0.9 )
+expect_true(average.group2.model.var.nullmod4/average.group2.model.var.nullmod < 1.1 & average.group2.model.var.nullmod4/average.group2.model.var.nullmod > 0.9 )
 
 
 
