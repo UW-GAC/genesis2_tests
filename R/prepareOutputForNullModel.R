@@ -3,7 +3,7 @@
 
 ### preparing output arguments for regression models that are not mixed. To match mixed models, 
 ## we call "sigma" varComp (because it can be viewd as a type of variance component)
-.nullModOutReg <- function(y, X, mod, family){
+.nullModOutReg <- function(y, X, mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
     if (family$family == "gaussian"){
@@ -25,7 +25,7 @@
     AIC <- AIC(mod)
     workingY <- y
     outcome <- y
-    model.matrix <- X 
+    model.matrix <- X
     cholSigmaInv <- sqrt(1/varComp)
     converged <- ifelse(family$family == "gaussian", TRUE, mod$converged)
     zeroFLAG <- NULL
@@ -35,7 +35,7 @@
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal = resid.marginal, 
                 logLik = logLik, AIC = AIC, workingY = workingY, outcome = outcome, 
-                model.matrix = model.matrix, cholSigmaInv = cholSigmaInv, 
+                model.matrix = model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
                 converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS ))
 }
 
@@ -43,7 +43,7 @@
 
 
 ### updated later for using sparsity...
-.nullModOutWLS <- function(y, X, vc.mod, family, group.idx){
+.nullModOutWLS <- function(y, X, vc.mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
     if (is.null(names(group.idx))){
@@ -101,7 +101,8 @@
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
-                outcome = outcome, model.matrix = model.matrix, cholSigmaInv = cholSigmaInv.diag, 
+                outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
+                cholSigmaInv = cholSigmaInv.diag, 
                 converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS ))
 }
 
@@ -219,6 +220,6 @@
                 fitted.values = fitted.values, resid.marginal =resid.marginal, 
                 resid.conditional =resid.conditional, logLik = logLik, 
                 logLikR = logLikR, AIC = AIC, workingY = workingY, outcome = outcome,
-                model.matrix =  model.matrix, cholSigmaInv = cholSigmaInv, 
+                model.matrix =  model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
                 converged = converged, zeroFLAG = zeroFLAG, RSS =RSS ))
 }

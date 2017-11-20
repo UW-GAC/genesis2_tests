@@ -65,7 +65,7 @@ expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
 
 ### test updating a conditional model: 
 G = matrix(rnorm(100, 100,1))
-nullmod2 <- updateNullModCond(nullmod, G, covMatList = list(cor.mat), group.idx = group.idx, AIREML.tol = 1e-7, verbose=FALSE)
+nullmod2 <- updateNullModCond(nullmod, G, covMatList = list(cor.mat), AIREML.tol = 1e-7, verbose=FALSE)
 nullmod3 <- fitNullModel(y, cbind(X, G), group.idx = group.idx, cor.mat, AIREML.tol = 1e-7, verbose=FALSE)
 
 expect_true(max(abs(nullmod2$varComp - nullmod3$varComp)) < 1e-6)

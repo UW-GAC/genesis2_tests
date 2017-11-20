@@ -1,6 +1,4 @@
 context("check update of null model after ranknormalizing and re-scaling residuals")
-require(GENESIS)
-require(GWASTools)
 
 test_that("updateOutcome", {
 ### Checks that updating the outcome and re-fitting the null model works okay.
@@ -33,7 +31,7 @@ throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = gr
 throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = NULL))
 throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = group.idx[[1]]))
 
-nullmod2 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("None"), verbose=FALSE)
+nullmod2 <- updateNullModOutcome(nullmod, covMatList = covMatList, rankNorm.option = c("by.group"), rescale = c("None"), verbose=FALSE)
 
 
 expect_true(abs(.averageGroupVar(nullmod2$varComp, covMatList = covMatList, group.idx = group.idx[1]) - 1) < 0.1 )
@@ -43,8 +41,8 @@ expect_true(abs(.averageGroupVar(nullmod2$varComp, covMatList = covMatList, grou
 average.group1.model.var.nullmod <- .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[1])
 average.group2.model.var.nullmod <- .averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[2])
 
-nullmod3 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("residSD"), verbose=FALSE)
-nullmod4 <- updateNullModOutcome(nullmod, covMatList = covMatList, group.idx = group.idx,  rankNorm.option = c("by.group"), rescale = c("model"), verbose=FALSE)
+nullmod3 <- updateNullModOutcome(nullmod, covMatList = covMatList, rankNorm.option = c("by.group"), rescale = c("residSD"), verbose=FALSE)
+nullmod4 <- updateNullModOutcome(nullmod, covMatList = covMatList, rankNorm.option = c("by.group"), rescale = c("model"), verbose=FALSE)
 
 average.group1.model.var.nullmod3 <- .averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[1])
 average.group2.model.var.nullmod3 <- .averageGroupVar(nullmod3$varComp, covMatList = covMatList, group.idx = group.idx[2])
