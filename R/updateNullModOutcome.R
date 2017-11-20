@@ -4,7 +4,10 @@
 ## the names of items in the list group.idx have to match the names of the corresponding variance components!
 
 updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("None", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
-   
+
+   rankNorm.option <- match.arg(rankNorm.option)
+   rescale <- match.arg(rescale)
+    
    if (nullmod$family$family != "gaussian") stop("Family must be gaussian")
     
    resid <- nullmod$resid.marginal
