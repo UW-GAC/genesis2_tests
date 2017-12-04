@@ -44,15 +44,16 @@ test_that("singleVarTest", {
         expit <- function(x){exp(x)/(1+exp(x))}
         p <- expit(X %*% c(-1, 0.5, 1))
         D <- rbinom(n, size = 1, prob = p)
-
-        nullmod <- fitNullModel(D, X, family = "binomial", verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod)
-        test.wald <- testGenoSingleVar(nullprep, G = geno, test = "Wald")
-
-	res.glm <- test.wald
+		
+		##comparing the Wald test - in genesis computed using the fixed effects of the null model. 
+		test.wald <- data.frame(Est = rep(NA, ncol(geno)), Est.SE = NA, Wald.Stat = NA, Wald.pval = NA)
+		res.glm <- test.wald
+	
 	for (i in 1:ncol(geno)){
-            glm.temp <- glm.mod <- glm(D ~ -1 + X + geno[,i], family = "binomial")
-            res.glm[i,] <- summary(glm.temp)$coef[4,]
+		nullmod <- fitNullModel(D, cbind(X, geno[,i]), family = "binomial", verbose=FALSE)
+		test.wald[i,] <- nullmod$fixef[4,]
+        glm.temp <-  glm(D ~ -1 + X + geno[,i], family = "binomial")
+        res.glm[i,] <- summary(glm.temp)$coef[4,]
 	}
 
 	expect_true(all(abs(res.glm$Est - test.wald$Est ) < 1e-8))
