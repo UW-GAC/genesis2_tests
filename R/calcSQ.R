@@ -25,7 +25,7 @@
 ###        diag(Sigma) <- diag(Sigma) + diagV
 ###    }
 	if(g==1){
-	  Sigma <- diag(x=rep(sigma2.k[m+1],n)) + V
+	  Sigma <- Diagonal(x=rep(sigma2.k[m+1],n)) + V
 	}else if(g>1){
 	  mylevels <- rep(NA, n)
 	  for(i in 1:g){
@@ -33,7 +33,7 @@
 	  }
 	  #	print(str( (sigma2.k[m+1:g])[mylevels] ))
 	  #	print(str(V))
-	  Sigma <- diag(x=(sigma2.k[m+1:g])[mylevels] ) + V 
+	  Sigma <- Diagonal(x=(sigma2.k[m+1:g])[mylevels] ) + V 
 	}    
     ### if non-gaussian family:
     if (!is.null(vmu)){

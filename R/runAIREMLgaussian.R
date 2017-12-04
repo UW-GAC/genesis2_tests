@@ -142,7 +142,7 @@
             }else{
                 for(i in 1:g){
 ###                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*sum(diag(lq$P)[group.idx[[i]]]))
-                  covMati <- diag( x=as.numeric( 1:n %in% group.idx[[i]] ) )
+                  covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
                   trPi.part1 <- sum(diag(Sigma.inv)[ group.idx[[i]] ] )
                   trPi.part2 <- sum(diag( 
                     (crossprod( Sigma.inv_X, covMati) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 

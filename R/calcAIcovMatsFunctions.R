@@ -80,7 +80,7 @@
 ###        score[ i] <- -0.5 * (sum(diag(P)[group.idx[[i]]]) - crossprod(PY[group.idx[[i]]]))
 ###       AI[ i,  i] <- 0.5 * crossprod(PY[group.idx[[i]]], PIPY[group.idx[[i]]])
           
-          covMati <- diag( x=as.numeric( 1:n %in% group.idx[[i]] ) )
+          covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
           IPY <- covMati %*% PY
           PIPY <- Sigma.inv %*% IPY - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(IPY) %*% Sigma.inv_X)	  
           
