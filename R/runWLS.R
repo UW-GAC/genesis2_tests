@@ -95,7 +95,7 @@
 	cholSigma.diag <- sqrt(diagSigma)
 	Sigma.inv.diag <- 1/diagSigma
         
-	lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), diag(cholSigma.diag))
+	lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), cholSigma.diag)
 	score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
 	AI       <- score.AI$AI
 

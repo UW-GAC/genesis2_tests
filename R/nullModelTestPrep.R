@@ -7,9 +7,11 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
     if (is.null(idx.exclude)){
         Y <- nullmod$workingY
         W <- nullmod$model.matrix
+        resid <- nullmod$resid.marginal
     } else{
         Y <- nullmod$workingY[-idx.exclude]
         W <- nullmod$model.matrix[-idx.exclude,]
+        resid <- nullmod$resid.marginal[-idx.exclude]
     }
     
     
@@ -23,27 +25,51 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         }
         CW <- crossprod(C, W)	
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
+        resid <- as.vector(Mt %*% crossprod(Mt, Y))
     }
-    
-    if (!nullmod$family$mixedmodel){  ## a vector or scalar cholSigmaInv
-        
-        if (nullmod$hetResid | nullmod$family$family != "gaussian")	{  ## cholSigmaInv is a vector
-            C <- ifelse(is.null(idx.exclude), nullmod$cholSigmaInv , nullmod$cholSigmaInv[-idx.exclude])
-        } else { ## not hetResid, family is "gaussian", cholSigmaInv is a scalar.
-            C <- nullmod$cholSigmaInv
-        }	  		
-        CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector
-        # matrix used to adjust phenotype and genotype for fixed effect covariates AND "decorrelating" the phenotype and genotype
-        # Mt <- diag(C) - tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
-        Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
-        diag(Mt) <- diag(Mt) + C
-    }	
+ 
+	if (!nullmod$family$mixedmodel & (nullmod$family$family != "gaussian")){
+		sigma <- sqrt(nullmod$varComp)
+		C <- diag(sigma)
+		CW <- W * sigma
+		Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))),CW)), CW)
+	}
 
+    
+    if (!nullmod$family$mixedmodel & (nullmod$family$family == "gaussian")){  ## a vector or scalar cholSigmaInv
+        
+		if (nullmod$hetResid)	{  ## cholSigmaInv is a vector
+            if (is.null(idx.exclude)){
+            	C <- nullmod$cholSigmaInv
+            } else{
+            	C <- nullmod$cholSigmaInv[-idx.exclude]
+            	}
+         }   
+        
+        if (!nullmod$hetResid) { ## family is "gaussian", cholSigmaInv is a scalar.
+            C <- nullmod$cholSigmaInv        
+        }	
+          		
+        CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector  
+        Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
+        diag(Mt) <- diag(Mt) + C     
+        
+        ## prepare resids for testing
+        if (nullmod$hetResid){
+        	resid <- as.vector(Mt %*% crossprod(Mt, Y))
+        } else{
+        	resid <- resid/nullmod$varComp
+        }
+        
+    }	
+    
+
+	
     # phenotype adjusted for the covariates/correlation structure
     Ytilde <- crossprod(Mt, Y)
     sY2 <- sum(Ytilde^2)
 
-    return(list(Mt = Mt, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = nullmod$resid.marginal))
+    return(list(Mt = Mt, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid))
 }
 
 
@@ -54,7 +80,7 @@ nullModelBRprep <- function(nullmod){
     
     probs <- nullmod$fitted.values
     
-    return(probs)
+    return(list(D =nullmod$outcome, probs = probs))
     
 }
 

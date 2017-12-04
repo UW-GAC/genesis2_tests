@@ -24,13 +24,19 @@
         sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, vmu = vmu, gmuinv = gmuinv )     
         lq <- .calcLikelihoodQuantities(Y, X, n, k, sq$Sigma.inv, diag(sq$cholSigma))
 
+        Sigma.inv=sq$Sigma.inv
+        Sigma.inv_X = lq$Sigma.inv_X
+        Xt_Sigma.inv_X.inv =lq$Xt_Sigma.inv_X.inv
+        PY = lq$PY
         
         # print current estimates
         if(verbose) print(c(sigma2.k, lq$logLikR, lq$RSS))
 
         if(reps > 1){
             # Average Information and Scores
-            covMats.score.AI <- .calcAIcovMats(Y, lq$P, lq$PY, covMatList)
+### more arguments
+            covMats.score.AI <- .calcAIcovMats(Y, lq$P, lq$PY, covMatList,
+                                               Sigma.inv=sq$Sigma.inv,Sigma.inv_X = lq$Sigma.inv_X,Xt_Sigma.inv_X.inv =lq$Xt_Sigma.inv_X.inv)
             AI <- covMats.score.AI$AI
             score <- covMats.score.AI$score
             
@@ -81,8 +87,18 @@
             # EM step
             sigma2.kplus1 <- rep(NA,m)
             for(i in 1:m){
-                PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
-                sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
+###                PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
+###                sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
+              PAPY <- 
+                Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
+              trPA.part1 <- sum( Sigma.inv * covMatList[[i]] )
+              trPA.part2 <- sum(diag( 
+                (crossprod( Sigma.inv_X, covMatList[[i]]) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
+              ))
+              trPA <-  trPA.part1 - trPA.part2
+              
+              sigma2.kplus1[i] <- as.numeric((1/n)*(sigma2.k[i]^2*crossprod(Y,PAPY) + n*sigma2.k[i] - sigma2.k[i]^2*trPA ))
+              
             }
             sigma2.k <- sigma2.kplus1
         }

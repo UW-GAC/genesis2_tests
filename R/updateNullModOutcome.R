@@ -3,17 +3,26 @@
 
 ## the names of items in the list group.idx have to match the names of the corresponding variance components!
 
-updateNullModOutcome <- function(nullmod, covMatList = NULL, group.idx = NULL, rankNorm.option = c("by.group", "all"), rescale = c("None", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
-   
+updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("None", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
+
+   rankNorm.option <- match.arg(rankNorm.option)
+   rescale <- match.arg(rescale)
+    
    if (nullmod$family$family != "gaussian") stop("Family must be gaussian")
     
    resid <- nullmod$resid.marginal
+   group.idx <- nullmod$group.idx
    if (!is.null(group.idx)) {
    		g <- length(group.idx)
-   		} else {
-   			g <- 1
-   			}
-   if (!is.null(covMatList)) m <- length(covMatList)
+   } else {
+   		g <- 1
+   }
+
+    if(!is.null(covMatList)){
+        if (class(covMatList) == "matrix"){
+            covMatList <- list(A = covMatList)
+        }
+    }
    
    ## checks that may be put into wrapper:
    if ((rescale != "None") & is.null(group.idx)) stop("Rescaling is only done by groups, and group indices are missing.") 

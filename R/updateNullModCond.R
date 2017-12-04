@@ -1,6 +1,6 @@
 
 ### fit a conditional model based on a previously fit model. Default does not re-estimate variance components, but it may. 
-updateNullModCond <- function(nullmod, G, covMatList = NULL, group.idx = NULL, AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
+updateNullModCond <- function(nullmod, G, covMatList = NULL,  AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
     
     ## a few checks that may be transfered to wrapper function: 
     if (nullmod$hetResid & is.null(group.idx)) stop("group indices are required for updating the null model")
@@ -16,7 +16,7 @@ updateNullModCond <- function(nullmod, G, covMatList = NULL, group.idx = NULL, A
     if (!nullmod$family$mixedmodel){ ## if it is not a mixed model, re-fit the model. (This includes hetrogeneous residuals).
        
        return(fitNullModel(nullmod$outcome, X, covMatList = NULL, 
-       						group.idx = group.idx, family = nullmod$family$family))  	
+       						group.idx = nullmod$group.idx, family = nullmod$family$family))  	
     }
     
     
@@ -25,7 +25,7 @@ updateNullModCond <- function(nullmod, G, covMatList = NULL, group.idx = NULL, A
 	## from the provided nullmod object. 
     
 	return(fitNullModel(nullmod$outcome, X, covMatList = covMatList, 
-				group.idx = group.idx, family = nullmod$family$family, start = nullmod$varComp,
+				group.idx = nullmod$group.idx, family = nullmod$family$family, start = nullmod$varComp,
 				AIREML.tol = AIREML.tol, maxIter= maxIter, dropZeros = dropZeros, verbose = verbose))     
 	    
 	     

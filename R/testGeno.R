@@ -18,28 +18,63 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     }
     
     if (test == "Wald" & !is.null(E)){
-        res <- .testGenoSingleVarWaldGxE(nullprep$Mt, G, E, nullprep$Ytilde, nullprep$sY2, n, nullprep$ k)
+        res <- .testGenoSingleVarWaldGxE(nullprep$Mt, G, E, nullprep$Ytilde, nullprep$sY2, n, nullprep$k, GxE.return.cov.mat=GxE.return.cov)
     }
     
     if (test == "Score"){
-        res <- .testGenoSingleVarScore(nullprep$Mt, G, nullprep$Ytilde)
+        res <- .testGenoSingleVarScore(nullprep$Mt, G, nullprep$resid)
+    }
+    
+    if (test == "BinomiRare"){
+    	res <- .testGenoSingleVarBR(nullprep$D, nullprep$probs, G)
     }
 
     return(res)
 }
 
 
+## this function currently assumes that the alt allele is the minor allele. So either G 
+## needs to be such that alt allele is minor allele, or the function checks for it, or a vector of 
+## indicators or of frequencies would be provided. 
+.testGenoSingleVarBR <- function(D, probs, G){
+		require(poibin)
+		res <- data.frame(n.carrier = NA, n.D.carrier = NA, expected.n.D.carrier = NA, pval = NA, stringsAsFactors = F)
+	
+	for (i in 1:ncol(G)){
+		carrier.inds <- which(G[,i] > 0)
+		res$n.carrier[i] <- length(carrier.inds)
+		cur.prob.vec <- probs[carrier.inds]
+		res$expected.n.D.carrier[i] <- sum(cur.prob.vec)
+		res$n.D.carrier[i] <- sum(d[carrier.inds])
+		
+		res$pval[i] <- .poibinMidp(n.carrier = res$n.carrier[i], n.D.carrier = res$n.D.carrier[i], prob.vec = cur.prob.vec)		 
+	}
 
-.testGenoSingleVarScore <- function(Mt, G, Ytilde){
+	
+	return(res)
+}
+
+
+.poibinMidp <- function(n.carrier, n.D.carrier, prob.vec){
+	stopifnot(n.D.carrier <= n.carrier, length(prob.vec) == n.carrier)
+	d.poibin <- dpoibin(0:n.carrier, prob.vec)
+	prob.cur <- d.poibin[n.D.carrier + 1]
+	mid.p <- 0.5*prob.cur + sum(d.poibin[d.poibin < prob.cur])
+	return(mid.p)
+}
+
+
+
+.testGenoSingleVarScore <- function(Mt, G, resid){
     Xtilde <- crossprod(Mt, G) # adjust genotypes for correlation structure and fixed effects
     XtX <- colSums(Xtilde^2) # vector of X^T P X (for each SNP) b/c (M^T M) = P
-    score <- as.vector(crossprod(Xtilde, Ytilde)) # X^T P Y
+    score <- as.vector(crossprod(G, resid)) # X^T P Y
     Stat <- score/sqrt(XtX)
     
-    res <- cbind(Score = score, Score.SE = sqrt(XtX), Score.Stat = Stat, 
-                 Score.pval = pchisq(Stat^2, df = 1, lower.tail = FALSE) )
+    res <- data.frame(Score = score, Score.SE = sqrt(XtX), Score.Stat = Stat, 
+                      Score.pval = pchisq(Stat^2, df = 1, lower.tail = FALSE) )
     
-    return(res)	
+    return(res)
 }
 
 
@@ -52,9 +87,9 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     RSS <- as.numeric((sY2 - XtY * beta)/(n - k - 1))
     Vbeta <- RSS/XtX
     Stat <- beta/sqrt(Vbeta)
-    res <- cbind(Est = beta, Est.SE = sqrt(Vbeta), Wald.Stat = Stat, 
-                 Wald.pval = pchisq(Stat^2, df = 1, lower.tail = FALSE))
-    return(res)	
+    res <- data.frame(Est = beta, Est.SE = sqrt(Vbeta), Wald.Stat = Stat, 
+                      Wald.pval = pchisq(Stat^2, df = 1, lower.tail = FALSE))
+    return(res)
 }
 
 
@@ -67,8 +102,6 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     
     if (GxE.return.cov.mat) {
         res.Vbetas <- vector(mode = "list", length = p)
-    } else {
-        res.Vbetas <- NULL
     }
     
     intE <- cbind(1, E) # add intercept the "Environmental" variable E.
@@ -113,8 +146,13 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     
     res[,"GxE.pval"] <- pchisq(res[,"GxE.Stat"], df = (v - 1), lower.tail = FALSE)
     res[,"Joint.pval"] <- pchisq(res[,"Joint.Stat"], df = v, lower.tail = FALSE)
-
-    return(list(res = res, GxEcovMatList = res.Vbetas))
+    
+    res <- as.data.frame(res)
+    if (GxE.return.cov.mat) {
+        return(list(res = res, GxEcovMatList = res.Vbetas))
+    } else {
+        return(res)
+    }
 }
 
 
@@ -150,6 +188,8 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
                                      error = function(e) { NA })
     
     res[,"Joint.pval"] <- pchisq(res[,"Joint.Stat"], df = v, lower.tail = FALSE)
+    
+    res <- as.data.frame(res)
     return(list(res = res, allelesCovMat = Vbetas))
 }
 
