@@ -13,6 +13,11 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
     n <- length(nullprep$Ytilde)
     p <- ncol(G)
     
+    if (test == "Wald" & nullprep$family != "gaussian"){
+    	test <- "Score"
+    	message("Cannot use Wald test for non-guassian families, using the score test instead.")
+    }
+    
     if (test == "Wald" & is.null(E)){
         res <- .testGenoSingleVarWald(nullprep$Mt, G, nullprep$Ytilde, nullprep$sY2, n, nullprep$k)
     }
