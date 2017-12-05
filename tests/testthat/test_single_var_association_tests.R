@@ -12,7 +12,7 @@ test_that("singleVarTest", {
 
 	nullmod <- fitNullModel(y, X, group.idx = group.idx, verbose=FALSE)
 	nullprep <- nullModelTestPrep(nullmod)
-	test.wald <- testGenoSingleVar(nullprep, G = geno, E = NULL, test = c("Wald"), GxE.return.cov = FALSE)
+	test.wald <- testGenoSingleVar(nullprep, G = geno, test = "Wald")
 	
 	# compare to weighted least squares using weighted lm:	
 	res.lm <- test.wald
@@ -20,9 +20,9 @@ test_that("singleVarTest", {
 		lm.temp <- lm(y ~ -1 + X + geno[,i], weights = c(rep(1/nullmod$varComp[1], n/2), 1/rep(nullmod$varComp[2], n/2)))
 		res.lm[i,] <- summary(lm.temp)$coef[4,]
 	}
-	
-	expect_true(all(abs(res.lm$Est - test.wald$Est ) < 1e-8))
-	expect_true(all(abs(res.lm$Wald.Stat - test.wald$Wald.Stat ) < 1e-8))
+        
+        expect_equal(res.lm$Est, test.wald$Est, tolerance = 1e-8)
+	expect_equal(res.lm$Wald.Stat, test.wald$Wald.Stat, tolerance = 1e-8)
 
 
         # without group
@@ -36,8 +36,8 @@ test_that("singleVarTest", {
 		res.lm[i,] <- summary(lm.temp)$coef[4,]
 	}
 	
-	expect_true(all(abs(res.lm$Est - test.wald$Est ) < 1e-8))
-	expect_true(all(abs(res.lm$Wald.Stat - test.wald$Wald.Stat ) < 1e-8))
+        expect_equal(res.lm$Est, test.wald$Est, tolerance = 1e-8)
+	expect_equal(res.lm$Wald.Stat, test.wald$Wald.Stat, tolerance = 1e-8)
 
 
         # logistic
@@ -57,14 +57,14 @@ test_that("singleVarTest", {
         res.glm[i,] <- summary(glm.temp)$coef[4,]
 	}
 
-	expect_true(all(abs(res.glm$Est - test.wald$Est ) < 1e-8))
-	expect_true(all(abs(res.glm$Wald.Stat - test.wald$Wald.Stat ) < 1e-8))
+        expect_equal(res.glm$Est, test.wald$Est, tolerance = 1e-8)
+	expect_equal(res.glm$Wald.Stat, test.wald$Wald.Stat, tolerance = 1e-8)
 	
 	## check that we get appropriate error when using the wald test instead of score with binomial outcomes:
 	nullmod <- fitNullModel(D, X, family = "binomial", verbose=FALSE)
 	nullprep <- nullModelTestPrep(nullmod)
-	test.score <- testGenoSingleVar(nullprep, G = geno, E = NULL, test = c("Wald"), GxE.return.cov = FALSE)
+	expect_message(test.score <- testGenoSingleVar(nullprep, G = geno, test = "Wald"), "Cannot use Wald test")
 
-	expect_true(colnames(test.score)[1] == "Score")
-	expect_true(all(abs(test.score$Score.pval - test.wald$Wald.pval) <0.01))
+	expect_equal(colnames(test.score)[1], "Score")
+	expect_equal(test.score$Score.pval, test.wald$Wald.pval, tolerance = 0.01)
 })
