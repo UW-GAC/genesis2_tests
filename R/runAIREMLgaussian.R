@@ -26,11 +26,7 @@
         sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, group.idx = group.idx)
                 
         lq <- .calcLikelihoodQuantities(Y, X, n, k, sq$Sigma.inv, diag(sq$cholSigma))
-### these will be used later
-        Sigma.inv=sq$Sigma.inv
-        Sigma.inv_X = lq$Sigma.inv_X
-        Xt_Sigma.inv_X.inv =lq$Xt_Sigma.inv_X.inv
-        PY = lq$PY
+
         # print current estimates
         if(verbose) print(c(sigma2.k, lq$logLikR, lq$RSS))
         
@@ -117,11 +113,11 @@
 ###              PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
 
               PAPY <- 
-                Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
+                sq$Sigma.inv %*% crossprod(covMatList[[i]],lq$PY) - tcrossprod(tcrossprod(lq$Sigma.inv_X, lq$Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],lq$PY)) %*% lq$Sigma.inv_X)	  
               #trPA <- sum(P*covMatList[[i]])
-              trPA.part1 <- sum( Sigma.inv * covMatList[[i]] )
+              trPA.part1 <- sum( sq$Sigma.inv * covMatList[[i]] )
               trPA.part2 <- sum(diag( 
-                (crossprod( Sigma.inv_X, covMatList[[i]]) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
+                (crossprod( lq$Sigma.inv_X, covMatList[[i]]) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
               ))
               trPA <-  trPA.part1 - trPA.part2
                 
@@ -132,23 +128,23 @@
             if(g == 1){
 ###              sigma2.kplus1[m+1] <- (1/n)*(sigma2.k[m+1]^2*crossprod(lq$PY) + n*sigma2.k[m+1] - sigma2.k[m+1]^2*sum(diag(lq$P)))
               
-              trP.part1 <- sum(diag( Sigma.inv ))
+              trP.part1 <- sum(diag( sq$Sigma.inv ))
               trP.part2 <- sum(diag( 
-                crossprod( Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
+                crossprod( lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
               ))
               trP <-  trP.part1 - trP.part2
               
-              sigma2.kplus1[m+1] <- (1/n)*(sigma2.k[m+1]^2*crossprod(PY) + n*sigma2.k[m+1] - sigma2.k[m+1]^2*trP )
+              sigma2.kplus1[m+1] <- (1/n)*(sigma2.k[m+1]^2*crossprod(lq$PY) + n*sigma2.k[m+1] - sigma2.k[m+1]^2*trP )
             }else{
                 for(i in 1:g){
 ###                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*sum(diag(lq$P)[group.idx[[i]]]))
                   covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
-                  trPi.part1 <- sum(diag(Sigma.inv)[ group.idx[[i]] ] )
+                  trPi.part1 <- sum(diag(sq$Sigma.inv)[ group.idx[[i]] ] )
                   trPi.part2 <- sum(diag( 
-                    (crossprod( Sigma.inv_X, covMati) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
+                    (crossprod( lq$Sigma.inv_X, covMati) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
                   ))
                   trPi <- trPi.part1 - trPi.part2
-                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*trPi )
+                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*trPi )
                 }
             }
             sigma2.k <- sigma2.kplus1
