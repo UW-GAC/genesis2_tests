@@ -69,7 +69,9 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
     Ytilde <- crossprod(Mt, Y)
     sY2 <- sum(Ytilde^2)
 
-    return(list(Mt = Mt, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid, family = nullmod$family$family))
+    out <- list(Mt = Mt, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid, family = nullmod$family$family, sample.id = rownames(W))
+    class(out) <- "GENESIS.nullModelPrep"
+    return(out)
 }
 
 

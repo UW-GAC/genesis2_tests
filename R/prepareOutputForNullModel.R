@@ -31,12 +31,14 @@
     zeroFLAG <- NULL
     RSS <- ifelse(family$family == "gaussian", sum(resid.marginal^2)/varComp/(nrow(X) - ncol(X)), 1)
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp,
+    out <- list(family = family, hetResid = hetResid, varComp = varComp,
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal = resid.marginal, 
                 logLik = logLik, AIC = AIC, workingY = workingY, outcome = outcome, 
                 model.matrix = model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS ))
+                converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS )
+    class(out) <- "GENESIS.nullModel"
+    return(out)
 }
 
 
@@ -97,13 +99,15 @@
 
 
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
+    out <- list(family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
                 outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
                 cholSigmaInv = cholSigmaInv.diag, 
-                converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS ))
+                converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS )
+    class(out) <- "GENESIS.nullModel"
+    return(out)
 }
 
 
@@ -215,11 +219,13 @@
 
 
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp, 
+    out <- list(family = family, hetResid = hetResid, varComp = varComp, 
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal =resid.marginal, 
                 resid.conditional =resid.conditional, logLik = logLik, 
                 logLikR = logLikR, AIC = AIC, workingY = workingY, outcome = outcome,
                 model.matrix =  model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG, RSS =RSS ))
+                converged = converged, zeroFLAG = zeroFLAG, RSS =RSS )
+    class(out) <- "GENESIS.nullMixedModel"
+    return(out)
 }
