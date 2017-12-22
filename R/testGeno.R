@@ -70,6 +70,7 @@ testGenoSingleVar <- function(nullprep, G, E = NULL, test = c("Wald", "Score"), 
 
 
 
+
 .testGenoSingleVarScore <- function(Mt, G, resid){
     Xtilde <- crossprod(Mt, G) # adjust genotypes for correlation structure and fixed effects
     XtX <- colSums(Xtilde^2) # vector of X^T P X (for each SNP) b/c (M^T M) = P

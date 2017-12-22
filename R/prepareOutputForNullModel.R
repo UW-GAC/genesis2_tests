@@ -41,6 +41,7 @@
                 converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS )
     class(out) <- "GENESIS.nullModel"
     return(out)
+
 }
 
 
@@ -196,10 +197,10 @@
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
-    Stat <- (vc.mod$beta/SE)^2
+    Stat <- as.numeric((vc.mod$beta/SE)^2)
     pval <- pchisq(Stat, df = 1, lower.tail = FALSE)
 
-    fixef <- data.frame(Est = vc.mod$beta, SE = SE, Stat = Stat, pval = pval)
+    fixef <- data.frame(Est = as.numeric(vc.mod$beta), SE = SE, Stat = Stat, pval = pval)
     rownames(fixef) <- varNames
     
     fitted.values <- as.vector(vc.mod$fits)
