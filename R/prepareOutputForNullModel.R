@@ -31,7 +31,9 @@
     zeroFLAG <- NULL
     RSS <- ifelse(family$family == "gaussian", sum(resid.marginal^2)/varComp/(nrow(X) - ncol(X)), 1)
     
-    out <- list(family = family, hetResid = hetResid, varComp = varComp,
+    sample.id <- rownames(model.matrix)
+    
+    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp,
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal = resid.marginal, 
                 logLik = logLik, AIC = AIC, workingY = workingY, outcome = outcome, 
@@ -97,9 +99,10 @@
     converged <- TRUE
     zeroFLAG <- NULL
 
-
+    sample.id <- rownames(model.matrix)
     
-    out <- list(family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
+    out <- list(sample.id = sample.id,
+                family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
@@ -217,9 +220,9 @@
     converged <- vc.mod$converged
     zeroFLAG <- vc.mod$zeroFLAG
 
-
+    sample.id <- rownames(model.matrix)
     
-    out <- list(family = family, hetResid = hetResid, varComp = varComp, 
+    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp, 
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal =resid.marginal, 
                 resid.conditional =resid.conditional, logLik = logLik, 
