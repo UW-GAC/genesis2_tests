@@ -3,11 +3,11 @@
 updateNullModCond <- function(nullmod, G, covMatList = NULL,  AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
     
     ## a few checks that may be transfered to wrapper function: 
-    if (nullmod$hetResid & is.null(group.idx)) stop("group indices are required for updating the null model")
+    if (nullmod$hetResid & is.null(nullmod$group.idx)) stop("group indices are required for updating the null model")
 
     #if (updateVarComp){ ## this check may be pulled out for wrapper function.
     	if (is.null(covMatList)) stop("covMatList is needed for udpating variance components")
-    	if (nullmod$hetResid & is.null(group.idx)) stop("group indices are required for updating variance components")
+    	if (nullmod$hetResid & is.null(nullmod$group.idx)) stop("group indices are required for updating variance components")
     #}
 
     
