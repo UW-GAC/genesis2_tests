@@ -1,6 +1,4 @@
 context("check null model WLS regression")
-require(GENESIS)
-require(GWASTools)
 
 test_that("WLS", {
 ### Checks for the linear regression case:
@@ -14,14 +12,13 @@ nullmod <- fitNullModel(y, X, group.idx = group.idx, verbose=FALSE)
 
 
 ## compare to GENESIS. I need to create a jusk correlation matrix that will zero out as having variance component zero...
-scanData <- ScanAnnotationDataFrame(data = data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3], group = c(rep("G1", n/2), rep("G2", n/2))))
+scanData <- data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3], group = c(rep("G1", n/2), rep("G2", n/2)))
 
 varCompJunk <- TRUE
 while(varCompJunk){
-
 	cor.mat <- diag(rnorm(n, sd = 0.01))
 	dimnames(cor.mat) <- list(scanData$scanID, scanData$scanID)
-	lmm.genesis <- fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat,group.var = "group", verbose=FALSE)
+	lmm.genesis <- GENESIS::fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat,group.var = "group", verbose=FALSE)
 	if (lmm.genesis$varComp[1] == 0 ) varCompJunk <- FALSE
 }
 

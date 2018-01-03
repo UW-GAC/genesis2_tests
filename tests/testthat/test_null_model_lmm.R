@@ -1,6 +1,4 @@
 context("check null model lmm")
-require(GENESIS)
-require(GWASTools)
 
 test_that("lmm", {
 ### Checks for the linear regression case:
@@ -14,15 +12,14 @@ group.idx <- list(G1 = c(1:(n/2)), G2 = c((n/2 + 1):n))
 
 
 ## compare to GENESIS. I need to create a jusk correlation matrix that will zero out as having variance component zero...
-scanData <- ScanAnnotationDataFrame(data = data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3], group = c(rep("G1", n/2), rep("G2", n/2))))
+scanData <- data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3], group = c(rep("G1", n/2), rep("G2", n/2)))
 
 varCompJunk <- FALSE
 while(!varCompJunk){
-
 	cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n)
 	cor.mat <- crossprod(cor.mat)
 	dimnames(cor.mat) <- list(scanData$scanID, scanData$scanID)
-	lmm.genesis <- fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat,group.var = "group", verbose=FALSE)
+	lmm.genesis <- GENESIS::fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat,group.var = "group", verbose=FALSE)
 	if (lmm.genesis$varComp[1] != 0 ) varCompJunk <- TRUE
 }
 
@@ -33,7 +30,6 @@ expect_equal(nullmod$family$family, "gaussian")
 expect_true(nullmod$family$mixedmodel)
 expect_true(nullmod$hetResid)
 expect_true(nullmod$converged)
-#expect_null(nullmod$zeroFLAG)
 expect_true(all(nullmod$workingY == y))
 expect_true(all(nullmod$outcome == y))
 expect_true(all(nullmod$model.matrix == X))
