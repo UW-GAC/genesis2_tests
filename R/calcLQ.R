@@ -1,6 +1,9 @@
 
 
-.calcLikelihoodQuantities <- function(Y, X, n, k, Sigma.inv, cholSigma.diag){
+.calcLikelihoodQuantities <- function(Y, X, Sigma.inv, cholSigma.diag){
+    
+    n <- length(Y)
+    k <- ncol(X)
     
     ### Calulate the weighted least squares estimate
     Sigma.inv_X <- crossprod(Sigma.inv, X)

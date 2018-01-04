@@ -4,7 +4,6 @@
     m <- length(covMatList)
     g <- length(group.idx)
     n <- length(Y)
-    k <- ncol(X)
     sigma2.p <- drop(var(Y))
     AIREML.tol <- AIREML.tol*sigma2.p  # set convergence tolerance dependent on trait
     val <- 2 * AIREML.tol
@@ -23,9 +22,9 @@
         sigma2.k[zeroFLAG] <- 0 # set these to 0
         
         ## replace with:
-        sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, n = n, group.idx = group.idx)
+        sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, group.idx = group.idx)
                 
-        lq <- .calcLikelihoodQuantities(Y, X, n, k, sq$Sigma.inv, diag(sq$cholSigma))
+        lq <- .calcLikelihoodQuantities(Y, X, sq$Sigma.inv, diag(sq$cholSigma))
 
         # print current estimates
         if(verbose) print(c(sigma2.k, lq$logLikR, lq$RSS))

@@ -5,7 +5,6 @@
 .runWLSgaussian <- function (Y, X, group.idx, start, AIREML.tol,
                              maxIter,  verbose){
     n <- length(Y)
-    k <- ncol(X)
     g <- length(group.idx)
     if (g <= 1) stop("group.idx must have length > 1")
     ## initializing parameters
@@ -43,7 +42,7 @@
         cholSigma.diag <- sqrt(diagSigma)
         Sigma.inv.diag <- 1/diagSigma
     
-        lq <- .calcLikelihoodQuantities(Y, X, n, k, Diagonal(x=Sigma.inv.diag), cholSigma.diag)
+        lq <- .calcLikelihoodQuantities(Y, X, Diagonal(x=Sigma.inv.diag), cholSigma.diag)
 
         
         
@@ -103,7 +102,7 @@
     cholSigma.diag <- sqrt(diagSigma)
     Sigma.inv.diag <- 1/diagSigma
     
-    lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), cholSigma.diag)
+    lq <- .calcLikelihoodQuantities(Y, X, diag(Sigma.inv.diag), cholSigma.diag)
 ###    score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
     score.AI <- .calcAIhetvars(Y, lq$PY, group.idx,
                                Sigma.inv = Diagonal(x=Sigma.inv.diag), Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)

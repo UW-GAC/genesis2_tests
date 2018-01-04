@@ -1,7 +1,8 @@
 
 
-.computeSigmaQuantities <- function(varComp, covMatList, n, group.idx = NULL, vmu = NULL, gmuinv = NULL){
+.computeSigmaQuantities <- function(varComp, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL){
     m <- length(covMatList)
+    n <- nrow(covMatList[[1]])
 
 ###    Sigma <- Vre <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
     Vre <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))

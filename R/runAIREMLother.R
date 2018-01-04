@@ -3,7 +3,6 @@
     
     m <- length(covMatList)
     n <- length(Y)
-    k <- ncol(X)
     
     # initial values for variance components
     if(is.null(start)){
@@ -21,8 +20,8 @@
         
         if (sum(zeroFLAG) == m)  return(list(allZero = TRUE))
         
-        sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, n = n, vmu = vmu, gmuinv = gmuinv )     
-        lq <- .calcLikelihoodQuantities(Y, X, n, k, sq$Sigma.inv, diag(sq$cholSigma))
+        sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, vmu = vmu, gmuinv = gmuinv )     
+        lq <- .calcLikelihoodQuantities(Y, X, sq$Sigma.inv, diag(sq$cholSigma))
 
 
         
