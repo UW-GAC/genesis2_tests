@@ -55,7 +55,7 @@ expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
 
 
 ## test without group
-nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
+#nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
 
 
 

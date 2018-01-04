@@ -2,40 +2,33 @@
 
 .computeSigmaQuantities <- function(varComp, covMatList, n, group.idx = NULL, vmu = NULL, gmuinv = NULL){
     m <- length(covMatList)
+
+###    Sigma <- Vre <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
+    Vre <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
     
     if (is.null(vmu)){ ## this means the family is "gaussian"
         if (is.null(group.idx)){
-            group.idx <- list( 1:nrow(covMatList[[1]]))
-            names(group.idx)[1]  <- names(varComp)[length(varComp)]
-            g <- 1
+            Sigma <- Diagonal(x=rep(varComp[m+1],n)) + Vre
         } else{
             g <- length(group.idx)
-        }
         
-    } else {
-        g <- 0
-    }
-    
-    Sigma <- Vre <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
-###    if(g > 0){
 ###        diagV <- rep(0,nrow(covMatList[[1]]))
 ###        for(i in 1:g){
 ###            diagV[group.idx[[i]]] <- varComp[m+i]
 ###        }
 ###        diag(Sigma) <- diag(Sigma) + diagV
-###    }
-    if(g==1){
-        Sigma <- Diagonal(x=rep(varComp[m+1],n)) + Vre
-    }else if(g>1){
-        mylevels <- rep(NA, n)
-        for(i in 1:g){
-	    mylevels[group.idx[[i]]] <- i # setting up vector of indicators; who is in which group
+
+            mylevels <- rep(NA, n)
+            for(i in 1:g){
+                mylevels[group.idx[[i]]] <- i # setting up vector of indicators; who is in which group
+            }
+            Sigma <- Diagonal(x=(varComp[m+1:g])[mylevels] ) + Vre
         }
-        Sigma <- Diagonal(x=(varComp[m+1:g])[mylevels] ) + Vre
-    }    
+
     ### if non-gaussian family:
-    if (!is.null(vmu)){
-        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+    } else {
+###        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+        Sigma <- Vre + diag(as.vector(vmu)/as.vector(gmuinv)^2)
     }
     
     # cholesky decomposition

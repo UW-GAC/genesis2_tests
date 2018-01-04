@@ -77,9 +77,10 @@ test_that("nullModelTestPrep vs calculateProjection - binary", {
 	
 	sqrt.cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n, dimnames=list(1:n, 1:n))
 	cor.mat <- crossprod(sqrt.cor.mat)
-
-varCompZero <- TRUE
-while(varCompZero){	
+        
+## reps <- 0
+## varCompZero <- TRUE
+## while(varCompZero & reps < 10){	
 	random.iid <- rnorm(n)
 	random <- crossprod(sqrt.cor.mat*0.05, random.iid)
 	expit <- function(x){exp(x)/(1+exp(x))} 
@@ -90,15 +91,17 @@ while(varCompZero){
         names(dat)[2:5] <- c("y", paste0("X",1:3))
         
 	
-	glmm.genesis <- tryCatch({
-		fitNullMM(dat, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat, family = "binomial", verbose=FALSE)
-				}, 
-			warning = function(w){return(list(message = "warning"))},
-			error = function(e){return(list(message = "error"))}
-			)
-	if (!is.null(glmm.genesis$message)) next
-	if (glmm.genesis$varComp[1] != 0 ) varCompZero <- FALSE
-}
+## 	glmm.genesis <- tryCatch({
+## 		GENESIS::fitNullMM(dat, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat, family = "binomial", verbose=FALSE, maxIter=10)
+## 				}, 
+## 			warning = function(w){return(list(message = "warning"))},
+## 			error = function(e){return(list(message = "error"))}
+## 			)
+## 	if (!is.null(glmm.genesis$message)) next
+## 	if (glmm.genesis$varComp[1] != 0 ) varCompZero <- FALSE
+##         reps <- reps + 1
+## }
+## if (varCompZero) stop("could not generate nonzero varComp")
 
         # basic
 	nullmod <- fitNullModel(y, X, family="binomial", verbose=FALSE)
