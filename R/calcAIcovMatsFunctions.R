@@ -1,13 +1,13 @@
 
-.calcAIcovMats <- function(Y, P, PY, covMatList,Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
+### .calcAIcovMats <- function(Y, P, PY, covMatList){
+.calcAIcovMats <- function(Y, PY, covMatList, Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
     m <- length(covMatList)
     AI <- matrix(NA, nrow =  m, ncol = m)
     score <- rep(NA, m)
     
     for (i in 1:m){
 ###        PAPY <- crossprod(P,crossprod(covMatList[[i]],PY))
-      PAPY <- 
-        Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
+      PAPY <- Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
       
       
       trPA.part1 <- sum( Sigma.inv * covMatList[[i]] )
@@ -32,15 +32,15 @@
 }	
 
 
-.calcAIcovMatsResids <- function(P, PY, covMatList, group.idx,Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
+### .calcAIcovMatsResids <- function(P, PY, covMatList, group.idx){
+.calcAIcovMatsResids <- function(PY, covMatList, group.idx, Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
     m <- length(covMatList)
     g <- length(group.idx)
     AI <- matrix(NA, nrow =  m, ncol = g)
     
     for(i in 1:m){
 ###    PAPY <- crossprod(P,crossprod(covMatList[[i]],PY))
-      PAPY <- 
-        Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
+      PAPY <- Sigma.inv %*% crossprod(covMatList[[i]],PY) - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],PY)) %*% Sigma.inv_X)	  
       
         if(g == 1){
             AI[i,1] <-as.numeric(0.5*crossprod(PY, PAPY)) # YPIPAPY
@@ -55,43 +55,44 @@
 }
 
 
-.calcAIhetvars <- function(P, PY, group.idx,Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
+### .calcAIhetvars <- function(P, PY, group.idx){
+.calcAIhetvars <- function(Y, PY, group.idx, Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
     g <- length(group.idx)
+    n <- length(Y)
     
     if (g == 1){
-###      score <-  -0.5*(sum(diag(P)) - crossprod(PY)) 
-###     AI <- 0.5*crossprod(PY,crossprod(P,PY))
+###        score <-  -0.5*(sum(diag(P)) - crossprod(PY)) 
+###        AI <- 0.5*crossprod(PY,crossprod(P,PY))
       
       trP.part1 <- sum(diag( Sigma.inv ))
       trP.part2 <- sum(diag( 
         crossprod( Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
       ))
       trP <-  trP.part1 - trP.part2
-      score[m+1] <- -0.5*(trP - crossprod(PY2))
-      YPIPIPY2 <- crossprod(PY2, Y)
-      AI <- 0.5*as.numeric(YPIPIPY2) 
+      score <- -0.5*(trP - crossprod(PY))
+      YPIPIPY <- crossprod(PY, Y)
+      AI <- 0.5*as.numeric(YPIPIPY) 
 ###      
     } else{	
         AI <- matrix(NA, nrow =  g, ncol = g)
         score <- rep(NA, g)
         
         for (i in 1:g) {
-###        PIPY <- crossprod(P[group.idx[[i]], ], PY[group.idx[[i]]]) 
-###        score[ i] <- -0.5 * (sum(diag(P)[group.idx[[i]]]) - crossprod(PY[group.idx[[i]]]))
-###       AI[ i,  i] <- 0.5 * crossprod(PY[group.idx[[i]]], PIPY[group.idx[[i]]])
+###            PIPY <- crossprod(P[group.idx[[i]], ], PY[group.idx[[i]]]) 
+###            score[ i] <- -0.5 * (sum(diag(P)[group.idx[[i]]]) - crossprod(PY[group.idx[[i]]]))
+
+            covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
+            IPY <- covMati %*% PY
+            PIPY <- Sigma.inv %*% IPY - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(IPY) %*% Sigma.inv_X)	  
           
-          covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
-          IPY <- covMati %*% PY
-          PIPY <- Sigma.inv %*% IPY - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(IPY) %*% Sigma.inv_X)	  
-          
-          trPi.part1 <- sum(diag(Sigma.inv)[ group.idx[[i]] ] )
-          trPi.part2 <- sum(diag( 
-            (crossprod( Sigma.inv_X, covMati) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
-          ))
-          trPi <- trPi.part1 - trPi.part2
+            trPi.part1 <- sum(diag(Sigma.inv)[ group.idx[[i]] ] )
+            trPi.part2 <- sum(diag( 
+                (crossprod( Sigma.inv_X, covMati) %*% Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
+            ))
+            trPi <- trPi.part1 - trPi.part2
           
             score[ i] <- -0.5*(trPi - crossprod(PY[group.idx[[i]]]))
-            AI[ i,  i] <- 0.5 * crossprod(PY[group.idx[[i]]], PIPY[group.idx[[i]]])
+            AI[i, i] <- 0.5 * crossprod(PY[group.idx[[i]]], PIPY[group.idx[[i]]])
             
             if ((i + 1) <= g) {
                 for (j in (i + 1):g) {

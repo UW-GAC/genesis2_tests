@@ -4,12 +4,9 @@
     
     ### Calulate the weighted least squares estimate
     Sigma.inv_X <- crossprod(Sigma.inv, X)
-    Sigma.inv_X <- crossprod(Sigma.inv,X)
-###    Xt_Sigma.inv_X.inv <- chol2inv(chol.Xt_Sigma.inv_X)
-###    beta <- crossprod(Xt_Sigma.inv_X.inv, crossprod(Sigma.inv_X, Y))
+###    chol.Xt_Sigma.inv_X <- chol(crossprod(X, Sigma.inv_X))
     tempXXX <- crossprod(X, Sigma.inv_X)
-    tempXXX <- (tempXXX + t(tempXXX))/2
-    
+    tempXXX <- (tempXXX + t(tempXXX))/2    
     chol.Xt_Sigma.inv_X <- chol(tempXXX)
     Xt_Sigma.inv_X.inv <- chol2inv(chol.Xt_Sigma.inv_X)
     beta <- crossprod(Xt_Sigma.inv_X.inv, crossprod(Sigma.inv_X, Y))
@@ -33,6 +30,8 @@
     
     
     ## calculate projection matrix.
+###    P <- Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X)
+###    PY <- crossprod(P, Y)
     PY <- Sigma.inv %*% Y - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(Y) %*% Sigma.inv_X)	  
     
 ###    return(list(P= P, PY = PY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = beta, fits = fits, residM = residM))

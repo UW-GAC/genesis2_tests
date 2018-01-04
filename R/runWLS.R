@@ -43,7 +43,7 @@
         cholSigma.diag <- sqrt(diagSigma)
         Sigma.inv.diag <- 1/diagSigma
     
-        lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), cholSigma.diag)
+        lq <- .calcLikelihoodQuantities(Y, X, n, k, Diagonal(x=Sigma.inv.diag), cholSigma.diag)
 
         
         
@@ -53,7 +53,9 @@
         ## Updating variances and calculating their covariance matrix
         if (reps > 1) {
             
-            score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
+###            score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
+            score.AI <- .calcAIhetvars(Y, lq$PY, group.idx,
+                                       Sigma.inv = Diagonal(x=Sigma.inv.diag), Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             score    <- score.AI$score
             AI       <- score.AI$AI
             AIinvScore <- solve(AI, score)
@@ -78,8 +80,14 @@
             sigma2.kplus1 <- rep(NA, g)
 
             for (i in 1:g) {
-             	sigma2.kplus1[i] <- (1/n) * (sigma2.k[i]^2 * crossprod(lq$PY[group.idx[[i]]]) + 
-                                                         n *sigma2.k[ i] - sigma2.k[i]^2 * sum(diag(lq$P)[group.idx[[i]]]))
+###             	sigma2.kplus1[i] <- (1/n) * (sigma2.k[i]^2 * crossprod(lq$PY[group.idx[[i]]]) + n *sigma2.k[i] - sigma2.k[i]^2 * sum(diag(lq$P)[group.idx[[i]]]))
+                covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
+                trPi.part1 <- sum(Sigma.inv.diag[ group.idx[[i]] ] )
+                trPi.part2 <- sum(diag( 
+                  (crossprod( lq$Sigma.inv_X, covMati) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
+                ))
+                trPi <- trPi.part1 - trPi.part2
+                sigma2.kplus1[i] <- (1/n)*(sigma2.k[i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[i] - sigma2.k[i]^2*trPi )
             }
 
             sigma2.k <- sigma2.kplus1
@@ -87,17 +95,19 @@
     })
     
     ## after convergence, updated sigma again
-	for (i in 1:g) {
-		diagSigma[group.idx[[i]]] <- sigma2.k[i]
-	}
-        
-	## just the diagonal - squared root of diagonals, and inverse of diagonals of Sigma.
-	cholSigma.diag <- sqrt(diagSigma)
-	Sigma.inv.diag <- 1/diagSigma
-        
-	lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), cholSigma.diag)
-	score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
-	AI       <- score.AI$AI
+    for (i in 1:g) {
+        diagSigma[group.idx[[i]]] <- sigma2.k[i]
+    }
+    
+    ## just the diagonal - squared root of diagonals, and inverse of diagonals of Sigma.
+    cholSigma.diag <- sqrt(diagSigma)
+    Sigma.inv.diag <- 1/diagSigma
+    
+    lq <- .calcLikelihoodQuantities(Y, X, n, k, diag(Sigma.inv.diag), cholSigma.diag)
+###    score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
+    score.AI <- .calcAIhetvars(Y, lq$PY, group.idx,
+                               Sigma.inv = Diagonal(x=Sigma.inv.diag), Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
+    AI       <- score.AI$AI
 
 
     eta <- lq$fits

@@ -35,9 +35,6 @@ expect_true(all(nullmod$outcome == y))
 expect_true(all(nullmod$model.matrix == X))
 
 
-
-
-
 ## checks - GENESIS:
 expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
 expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
@@ -45,9 +42,6 @@ expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9)
 expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
 expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
 
-## currently GENESIS has a mistake, in AUC calculation it uses the number of 
-## matrices and groups used, but not the actual number of non-zero variance components. 
-## so this "2" fixes for it. 
 expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
 expect_true(all(nullmod$workingY == lmm.genesis$workingY))
 expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
@@ -57,6 +51,12 @@ expect_equal(nullmod$family$family, lmm.genesis$family$family)
 expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
 expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
 expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
+
+
+
+## test without group
+nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
+
 
 
 ### test updating a conditional model: 

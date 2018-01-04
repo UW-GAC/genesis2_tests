@@ -1,4 +1,5 @@
 import(stats)
+import(Matrix)
 
 export(fitNullModel,
        updateNullModOutcome,

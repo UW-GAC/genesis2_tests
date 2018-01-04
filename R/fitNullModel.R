@@ -92,11 +92,6 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
         
     }	
     
-    
-    ## prepare output arguments. 
-    ## First put arguments that are outputted using all regression models. 
-    ## Then add arguments to the list according to the type of model. 
-    
     ## preparing outputs in dedicated functions, add match.call() (Anyting else?)
     out$call <- match.call()
     
