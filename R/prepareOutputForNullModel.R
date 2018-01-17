@@ -120,7 +120,7 @@
 
 
 
-.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, use.sparsity = FALSE, dropZeros = TRUE){
+.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, dropZeros = TRUE){
     n <- nrow(X)
     k <- ncol(X)
     m <- length(covMatList)
@@ -171,21 +171,23 @@
     
 
     # Constructing the covariance Matrix
-    Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
-    if(g > 0){
-        diagV <- rep(0,n)
-        for(i in 1:g){
-            diagV[group.idx[[i]]] <- varComp[m+i]
-        }
-        diag(Sigma) <- diag(Sigma) + diagV
-    }
-    if (family$family != "gaussian"){
-        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
-    }
+    ## Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
+    ## if(g > 0){
+    ##     diagV <- rep(0,n)
+    ##     for(i in 1:g){
+    ##         diagV[group.idx[[i]]] <- varComp[m+i]
+    ##     }
+    ##     diag(Sigma) <- diag(Sigma) + diagV
+    ## }
+    ## if (family$family != "gaussian"){
+    ##     Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+    ## }
 
-    SigmaInv <- chol2inv(chol(Sigma))
+    ## SigmaInv <- chol2inv(chol(Sigma))
+    sq <- .computeSigmaQuantities(varComp = varComp, covMatList = covMatList, group.idx = group.idx, vmu = vmu, gmuinv = gmuinv)
     # Cholesky Decomposition
-    cholSigmaInv <- t(chol(SigmaInv))
+    ## cholSigmaInv <- t(chol(SigmaInv))
+    cholSigmaInv <- t(chol(sq$Sigma.inv))
     dimnames(cholSigmaInv) <- list(colnames(covMatList[[1]]), colnames(covMatList[[1]]))
     
 
