@@ -29,7 +29,7 @@
     ### if non-gaussian family:
     } else {
 ###        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
-        Sigma <- Vre + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+        Sigma <- Diagonal(x=as.vector(vmu)/as.vector(gmuinv)^2) + Vre
     }
     
     # cholesky decomposition

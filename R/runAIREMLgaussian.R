@@ -143,7 +143,7 @@
                       (crossprod( lq$Sigma.inv_X, covMati) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
                     ))
                   trPi <- trPi.part1 - trPi.part2
-                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*trPi )
+                  sigma2.kplus1[m+i] <- as.numeric((1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*trPi ))
                 }
             }
             sigma2.k <- sigma2.kplus1
@@ -152,7 +152,7 @@
     })
     
     # linear predictor
-    eta <- lq$fits + crossprod(sq$Vre, lq$Sigma.inv_R) # X\beta + Zb
+    eta <- as.numeric(lq$fits + crossprod(sq$Vre, lq$Sigma.inv_R)) # X\beta + Zb
     
     return(list(varComp = sigma2.k, AI = AI, converged = converged, zeroFLAG = zeroFLAG, beta=lq$beta, residM = lq$residM, eta=eta, logLikR=lq$logLikR, logLik=lq$logLik, RSS=lq$RSS, fits = lq$fits))
     
