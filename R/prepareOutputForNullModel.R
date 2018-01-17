@@ -2,7 +2,7 @@
 
 
 ### preparing output arguments for regression models that are not mixed. To match mixed models, 
-## we call "sigma" varComp (because it can be viewd as a type of variance component)
+## we call "sigma" varComp (because it can be viewed as a type of variance component)
 .nullModOutReg <- function(y, X, mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
@@ -64,15 +64,15 @@
     
     hetResid <- TRUE
     varNames <- colnames(X) 
-    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
+###    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
     
     ### in future version, using Matrix package, we will have: 
-    ### cholSigmaInv <- Diagonal(sqrt(diag(vc.mod$Sigma.inv)))
+    cholSigmaInv <- Diagonal(x=sqrt(diag(vc.mod$Sigma.inv)))
     
     RSS <- vc.mod$RSS
    
-    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
-    # betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+###    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
+    betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -108,7 +108,8 @@
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
                 outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
-                cholSigmaInv = cholSigmaInv.diag, 
+###                cholSigmaInv = cholSigmaInv.diag, 
+                cholSigmaInv = cholSigmaInv, 
                 converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS )
     class(out) <- "GENESIS.nullModel"
     return(out)
@@ -199,10 +200,10 @@
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
-    Stat <- as.numeric((vc.mod$beta/SE)^2)
+    Stat <- (vc.mod$beta/SE)^2
     pval <- pchisq(Stat, df = 1, lower.tail = FALSE)
 
-    fixef <- data.frame(Est = as.numeric(vc.mod$beta), SE = SE, Stat = Stat, pval = pval)
+    fixef <- data.frame(Est = vc.mod$beta, SE = SE, Stat = Stat, pval = pval)
     rownames(fixef) <- varNames
     
     fitted.values <- as.vector(vc.mod$fits)

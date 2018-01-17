@@ -36,13 +36,13 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
     }
 
     
-    if (!nullmod$family$mixedmodel & (nullmod$family$family == "gaussian")){  ## a vector or scalar cholSigmaInv
+    if (!nullmod$family$mixedmodel & (nullmod$family$family == "gaussian")){  ## a diagonal or scalar cholSigmaInv
         
-        if (nullmod$hetResid)	{  ## cholSigmaInv is a vector
+        if (nullmod$hetResid)	{  ## cholSigmaInv is diagonal
             if (is.null(idx.exclude)){
-            	C <- nullmod$cholSigmaInv
+            	C <- diag(nullmod$cholSigmaInv)
             } else{
-            	C <- nullmod$cholSigmaInv[-idx.exclude]
+            	C <- diag(nullmod$cholSigmaInv)[-idx.exclude]
             }
         }   
         
