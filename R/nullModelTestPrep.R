@@ -23,7 +23,8 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         } else{
             C <- subsetCholSigmaInv(nullmod$cholSigmaInv, idx.exclude)
         }
-        CW <- crossprod(C, W)	
+        CW <- crossprod(C, W)
+        # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
         resid <- as.vector(Mt %*% crossprod(Mt, Y))
     }
@@ -32,6 +33,7 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         sigma <- sqrt(nullmod$varComp)
         C <- diag(sigma)
         CW <- W * sigma
+        # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))),CW)), CW)
     }
 
