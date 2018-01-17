@@ -19,7 +19,7 @@ updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c
    }
 
     if(!is.null(covMatList)){
-        if (class(covMatList) == "matrix"){
+        if (!is.list(covMatList)){
             covMatList <- list(A = covMatList)
         }
     }

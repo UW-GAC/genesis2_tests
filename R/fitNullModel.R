@@ -21,7 +21,7 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
                          AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
     
     if(!is.null(covMatList)){
-        if (class(covMatList) == "matrix"){
+        if (!is.list(covMatList)){
             covMatList <- list(A = covMatList)
         }
     } 
