@@ -2,7 +2,7 @@
 
 
 ### preparing output arguments for regression models that are not mixed. To match mixed models, 
-## we call "sigma" varComp (because it can be viewd as a type of variance component)
+## we call "sigma" varComp (because it can be viewed as a type of variance component)
 .nullModOutReg <- function(y, X, mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
@@ -31,12 +31,17 @@
     zeroFLAG <- NULL
     RSS <- ifelse(family$family == "gaussian", sum(resid.marginal^2)/varComp/(nrow(X) - ncol(X)), 1)
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp,
+    sample.id <- rownames(model.matrix)
+    
+    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp,
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal = resid.marginal, 
                 logLik = logLik, AIC = AIC, workingY = workingY, outcome = outcome, 
                 model.matrix = model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS ))
+                converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS )
+    class(out) <- "GENESIS.nullModel"
+    return(out)
+
 }
 
 
@@ -59,15 +64,15 @@
     
     hetResid <- TRUE
     varNames <- colnames(X) 
-    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
+###    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
     
     ### in future version, using Matrix package, we will have: 
-    ### cholSigmaInv <- Diagonal(sqrt(diag(vc.mod$Sigma.inv)))
+    cholSigmaInv <- Diagonal(x=sqrt(diag(vc.mod$Sigma.inv)))
     
     RSS <- vc.mod$RSS
    
-    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
-    # betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+###    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
+    betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -95,15 +100,19 @@
     converged <- TRUE
     zeroFLAG <- NULL
 
-
+    sample.id <- rownames(model.matrix)
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
+    out <- list(sample.id = sample.id,
+                family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
                 outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
-                cholSigmaInv = cholSigmaInv.diag, 
-                converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS ))
+###                cholSigmaInv = cholSigmaInv.diag, 
+                cholSigmaInv = cholSigmaInv, 
+                converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS )
+    class(out) <- "GENESIS.nullModel"
+    return(out)
 }
 
 
@@ -112,7 +121,7 @@
 
 
 
-.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, use.sparsity = FALSE, dropZeros = TRUE){
+.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, dropZeros = TRUE){
     n <- nrow(X)
     k <- ncol(X)
     m <- length(covMatList)
@@ -163,21 +172,23 @@
     
 
     # Constructing the covariance Matrix
-    Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
-    if(g > 0){
-        diagV <- rep(0,n)
-        for(i in 1:g){
-            diagV[group.idx[[i]]] <- varComp[m+i]
-        }
-        diag(Sigma) <- diag(Sigma) + diagV
-    }
-    if (family$family != "gaussian"){
-        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
-    }
+    ## Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
+    ## if(g > 0){
+    ##     diagV <- rep(0,n)
+    ##     for(i in 1:g){
+    ##         diagV[group.idx[[i]]] <- varComp[m+i]
+    ##     }
+    ##     diag(Sigma) <- diag(Sigma) + diagV
+    ## }
+    ## if (family$family != "gaussian"){
+    ##     Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+    ## }
 
-    SigmaInv <- chol2inv(chol(Sigma))
+    ## SigmaInv <- chol2inv(chol(Sigma))
+    sq <- .computeSigmaQuantities(varComp = varComp, covMatList = covMatList, group.idx = group.idx, vmu = vmu, gmuinv = gmuinv)
     # Cholesky Decomposition
-    cholSigmaInv <- t(chol(SigmaInv))
+    ## cholSigmaInv <- t(chol(SigmaInv))
+    cholSigmaInv <- t(chol(sq$Sigma.inv))
     dimnames(cholSigmaInv) <- list(colnames(covMatList[[1]]), colnames(covMatList[[1]]))
     
 
@@ -189,10 +200,10 @@
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
-    Stat <- as.numeric((vc.mod$beta/SE)^2)
+    Stat <- (vc.mod$beta/SE)^2
     pval <- pchisq(Stat, df = 1, lower.tail = FALSE)
 
-    fixef <- data.frame(Est = as.numeric(vc.mod$beta), SE = SE, Stat = Stat, pval = pval)
+    fixef <- data.frame(Est = vc.mod$beta, SE = SE, Stat = Stat, pval = pval)
     rownames(fixef) <- varNames
     
     fitted.values <- as.vector(vc.mod$fits)
@@ -213,13 +224,15 @@
     converged <- vc.mod$converged
     zeroFLAG <- vc.mod$zeroFLAG
 
-
+    sample.id <- rownames(model.matrix)
     
-    return(list(family = family, hetResid = hetResid, varComp = varComp, 
+    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp, 
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal =resid.marginal, 
                 resid.conditional =resid.conditional, logLik = logLik, 
                 logLikR = logLikR, AIC = AIC, workingY = workingY, outcome = outcome,
                 model.matrix =  model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG, RSS =RSS ))
+                converged = converged, zeroFLAG = zeroFLAG, RSS =RSS )
+    class(out) <- "GENESIS.nullMixedModel"
+    return(out)
 }

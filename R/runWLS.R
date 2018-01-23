@@ -54,9 +54,9 @@
         if (reps > 1) {
             
 ###            score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
-            score.AI <- .calcAIhetvars(Y, lq$PY, group.idx=group.idx,
+            score.AI <- .calcAIhetvars(Y, lq$PY, group.idx,
                                        Sigma.inv = Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
-             score    <- score.AI$score
+            score    <- score.AI$score
             AI       <- score.AI$AI
             AIinvScore <- solve(AI, score)
 
@@ -106,7 +106,7 @@
     
     lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag)
 ###    score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
-    score.AI <- .calcAIhetvars(Y, lq$PY, group.idx=group.idx,
+    score.AI <- .calcAIhetvars(Y, lq$PY, group.idx,
                                Sigma.inv = Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
     AI       <- score.AI$AI
 
