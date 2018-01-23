@@ -56,11 +56,7 @@
 
 
 ### .calcAIhetvars <- function(P, PY, group.idx){
-<<<<<<< HEAD
 .calcAIhetvars <- function(Y, PY, PPY,group.idx, Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
-=======
-.calcAIhetvars <- function(Y, PY, group.idx, Sigma.inv, Sigma.inv_X, Xt_Sigma.inv_X.inv){
->>>>>>> 28f22050a8a30f11fff129ec6cc8db1bb644727f
     g <- length(group.idx)
     n <- length(Y)
     
@@ -73,16 +69,10 @@
         crossprod( Sigma.inv_X) %*% Xt_Sigma.inv_X.inv 
       ))
       trP <-  trP.part1 - trP.part2
-<<<<<<< HEAD
       score <- as.numeric(-0.5*(trP - crossprod(PY)))
 ####      
       YPIPIPY2 <- crossprod(PY, PPY)
       AI <- 0.5*as.numeric(YPIPIPY2) 
-=======
-      score <- -0.5*(trP - crossprod(PY))
-      YPIPIPY <- crossprod(PY, Y)
-      AI <- 0.5*as.numeric(YPIPIPY) 
->>>>>>> 28f22050a8a30f11fff129ec6cc8db1bb644727f
 ###      
     } else{	
         AI <- matrix(NA, nrow =  g, ncol = g)

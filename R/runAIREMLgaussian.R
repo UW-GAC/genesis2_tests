@@ -54,15 +54,9 @@
                                                Sigma.inv = sq$Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             AI[1:m, 1:m] <- covMats.score.AI$AI
             score[1:m]  <- covMats.score.AI$score
-<<<<<<< HEAD
 #### more arguments             
             het.vars.score.AI <- .calcAIhetvars(#lq$P,
                                                 Y, lq$PY, lq$PPY, group.idx,
-=======
-### more arguments             
-            het.vars.score.AI <- .calcAIhetvars(#lq$P,
-                                                Y, lq$PY, group.idx,
->>>>>>> 28f22050a8a30f11fff129ec6cc8db1bb644727f
                                                 Sigma.inv = sq$Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             score[(m + 1):(m + g)]  <- het.vars.score.AI$score
             AI[(m + 1):(m + g),(m+1):(m + g)]  <- het.vars.score.AI$AI
@@ -139,11 +133,7 @@
                 ))
                 trP <-  trP.part1 - trP.part2
               
-<<<<<<< HEAD
                 sigma2.kplus1[m+1] <- as.numeric((1/n)*(sigma2.k[m+1]^2*crossprod(lq$PY) + n*sigma2.k[m+1] - sigma2.k[m+1]^2*trP ))
-=======
-                sigma2.kplus1[m+1] <- (1/n)*(sigma2.k[m+1]^2*crossprod(lq$PY) + n*sigma2.k[m+1] - sigma2.k[m+1]^2*trP )
->>>>>>> 28f22050a8a30f11fff129ec6cc8db1bb644727f
             }else{
                 for(i in 1:g){
 ###                  sigma2.kplus1[m+i] <- (1/n)*(sigma2.k[m+i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[m+i] - sigma2.k[m+i]^2*sum(diag(lq$P)[group.idx[[i]]]))
