@@ -1,6 +1,8 @@
 import(stats)
+import(Matrix)
 
 export(fitNullModel,
+       updateNullModOutcome,
        nullModelTestPrep,
        testGenoSingleVar,
        testVariantSet)

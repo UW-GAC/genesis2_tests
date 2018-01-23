@@ -1,6 +1,4 @@
 context("check null model linear regression")
-require(GENESIS)
-require(GWASTools)
 
 test_that("linear", {
 ### Checks for the linear regression case:
@@ -15,8 +13,8 @@ nullmod <- fitNullModel(y, X, verbose=FALSE)
 lm.mod <- lm(y ~ -1 + X)
 
 ## compare to GENESIS:
-scanData <- ScanAnnotationDataFrame(data = data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3]))
-lm.genesis <- fitNullReg(scanData, "y", covars = c("X1", "X2", "X3"), verbose=FALSE)
+scanData <- data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2], X3 = X[,3])
+lm.genesis <- GENESIS::fitNullReg(scanData, "y", covars = c("X1", "X2", "X3"), verbose=FALSE)
 
 
 

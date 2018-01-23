@@ -1,6 +1,4 @@
 context("check null model lmm")
-require(GENESIS)
-require(GWASTools)
 
 test_that("glmm", {
 ### Checks for the logistic (also poisson, same algorithm) regression case:
@@ -25,10 +23,10 @@ while(varCompZero){
 	p <- expit(X %*% c(-1, 0.5, 1) + random) 
 	D <- rbinom(n, size = 1, prob = p)
 	
-	scanData <- ScanAnnotationDataFrame(data = data.frame(scanID = scanID, D = D, X1 = X[,1], X2 = X[,2], X3 = X[,3]))
+	scanData <- data.frame(scanID = scanID, D = D, X1 = X[,1], X2 = X[,2], X3 = X[,3])
 	
 	glmm.genesis <- tryCatch({
-		fitNullMM(scanData, "D", covars = c("X1", "X2", "X3"), covMatList = cor.mat, family = "binomial", verbose=FALSE)
+		GENESIS::fitNullMM(scanData, "D", covars = c("X1", "X2", "X3"), covMatList = cor.mat, family = "binomial", verbose=FALSE)
 				}, 
 			warning = function(w){return(list(message = "warning"))},
 			error = function(e){return(list(message = "error"))}

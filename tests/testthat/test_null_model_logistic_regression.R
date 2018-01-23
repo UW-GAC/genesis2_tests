@@ -1,6 +1,4 @@
 context("check null model logistic regression")
-require(GENESIS)
-require(GWASTools)
 
 test_that("logistic", {
 ### Checks for the logistic regression case:
@@ -19,8 +17,8 @@ nullmod <- fitNullModel(D, X, family = "binomial", verbose=FALSE)
 glm.mod <- glm(D ~ -1 + X, family = "binomial")
 
 ## compare to GENESIS:
-scanData <- ScanAnnotationDataFrame(data = data.frame(scanID = paste0("p", 1:n), D = D, X1 = X[,1], X2 = X[,2], X3 = X[,3]))
-glm.genesis <- fitNullReg(scanData, "D", covars = c("X1", "X2", "X3"), family = "binomial", verbose=FALSE)
+scanData <- data.frame(scanID = paste0("p", 1:n), D = D, X1 = X[,1], X2 = X[,2], X3 = X[,3])
+glm.genesis <- GENESIS::fitNullReg(scanData, "D", covars = c("X1", "X2", "X3"), family = "binomial", verbose=FALSE)
 
 ## checks - logistic regression:
 expect_equal(nullmod$family$family, "binomial")
@@ -57,5 +55,3 @@ expect_equal(nullmod$family$family, glm.genesis$family$family)
 expect_true(all(abs(nullmod$varComp - glm.genesis$sigma^2) < 1e-10))
 
 })
-
-
