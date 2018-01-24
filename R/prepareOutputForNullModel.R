@@ -23,8 +23,8 @@
     resid.marginal <-  residuals(mod, type = "response")
     logLik <- as.numeric(logLik(mod))
     AIC <- AIC(mod)
-    workingY <- y
-    outcome <- y
+    workingY <- drop(y)
+    outcome <- drop(y)
     model.matrix <- X
     cholSigmaInv <- sqrt(1/varComp)
     converged <- ifelse(family$family == "gaussian", TRUE, mod$converged)
@@ -72,7 +72,7 @@
     RSS <- vc.mod$RSS
    
 ###    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
-    betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+    betaCov <- as.matrix(RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X)))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -90,10 +90,10 @@
     
     eta <- vc.mod$eta
     
-    workingY <- y
-    outcome <- y
+    workingY <- drop(y)
+    outcome <- drop(y)
     
-    resid.conditional <- as.vector(workingY - eta) ### should be the same as resid.marginal
+    resid.conditional <- drop(workingY - eta) ### should be the same as resid.marginal
     
     model.matrix <- X 
     
@@ -196,7 +196,7 @@
     
     RSS <- ifelse(family$family == "gaussian", vc.mod$RSS, 1)
     
-    betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+    betaCov <- as.matrix(RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X)))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -214,10 +214,10 @@
     
     eta <- vc.mod$eta
     
-    workingY <- workingY
-    outcome <- y
+    workingY <- drop(workingY)
+    outcome <- drop(y)
     
-    resid.conditional <-  as.vector(drop(workingY) - vc.mod$eta) ### 
+    resid.conditional <-  drop(workingY - vc.mod$eta) ### 
     
     model.matrix <- X 
     
