@@ -56,7 +56,7 @@
             score[1:m]  <- covMats.score.AI$score
 #### more arguments             
             het.vars.score.AI <- .calcAIhetvars(#lq$P,
-                                                Y, lq$PY, lq$PPY, group.idx,
+                                                lq$PY, lq$PPY, group.idx,
                                                 Sigma.inv = sq$Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             score[(m + 1):(m + g)]  <- het.vars.score.AI$score
             AI[(m + 1):(m + g),(m+1):(m + g)]  <- het.vars.score.AI$AI

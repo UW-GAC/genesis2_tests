@@ -53,12 +53,6 @@ expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
 expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
 
 
-
-## test without group
-#nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
-
-
-
 ### test updating a conditional model: 
 G = matrix(rnorm(100, 100,1))
 nullmod2 <- updateNullModCond(nullmod, G, covMatList = list(cor.mat), AIREML.tol = 1e-7, verbose=FALSE)
@@ -69,5 +63,38 @@ expect_true(max(abs(nullmod3$fixef - nullmod2$fixef)) < 1e-5)
 expect_true(all(abs(nullmod2$cholSigmaInv - nullmod3$cholSigmaInv) < 1e-5))
 expect_true(all(abs(nullmod2$varCompCov - nullmod3$varCompCov) < 1e-5))
 
+
+
+
+## test without group
+nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
+
+lmm.genesis <- GENESIS::fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat, verbose=FALSE)
+
+expect_equal(nullmod$family$family, "gaussian")
+expect_true(nullmod$family$mixedmodel)
+expect_false(nullmod$hetResid)
+expect_true(nullmod$converged)
+expect_true(all(nullmod$workingY == y))
+expect_true(all(nullmod$outcome == y))
+expect_true(all(nullmod$model.matrix == X))
+
+
+## checks - GENESIS:
+expect_true(all(abs(nullmod$fixef - lmm.genesis$fixef) < 1e-9))
+expect_true(all(abs(nullmod$betaCov - lmm.genesis$betaCov) < 1e-9))
+expect_true(all(abs(nullmod$resid.marginal - lmm.genesis$resid.response) < 1e-9))
+expect_true(all(abs(nullmod$logLik - lmm.genesis$logLik) < 1e-9))
+expect_true(all(abs(nullmod$logLikR - lmm.genesis$logLikR) < 1e-9))
+
+expect_true(all(abs(nullmod$AIC - lmm.genesis$AIC) < 1e-9))
+expect_true(all(nullmod$workingY == lmm.genesis$workingY))
+expect_true(all(nullmod$model.matrix == lmm.genesis$model.matrix))
+expect_true(all(abs(nullmod$varComp - lmm.genesis$varComp) < 1e-9))
+expect_true(all(abs(nullmod$varCompCov[2,2] - lmm.genesis$varCompCov[2,2]) < 1e-9)) 
+expect_equal(nullmod$family$family, lmm.genesis$family$family)
+expect_true(all(nullmod$zeroFLAG == lmm.genesis$zeroFLAG))
+expect_true(all(abs(nullmod$cholSigmaInv - lmm.genesis$cholSigmaInv) < 1e-9))
+expect_true(all(abs(nullmod$RSS - lmm.genesis$RSS) < 1e-9))
 
 })
