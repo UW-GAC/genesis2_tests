@@ -2,7 +2,7 @@
 ## takes a null model and prepare specific arguments to streamline the testing
 ## idx.exclude are indices of individuals that should be excluded (e.g. because of missing genotypes)
 
-nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
+nullModelTestPrep <- function(nullmod, G, idx.exclude = NULL){
     
     if (is.null(idx.exclude)){
         Y <- nullmod$workingY
@@ -27,6 +27,9 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
         resid <- as.vector(Mt %*% crossprod(Mt, Y))
+    
+####
+        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
     }
     
     if (!nullmod$family$mixedmodel & (nullmod$family$family != "gaussian")){
@@ -34,7 +37,9 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         C <- diag(sigma)
         CW <- W * sigma
         # Projection matrix P = Mt %*% M
-        Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))),CW)), CW)
+        Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
+####
+        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
     }
 
     
@@ -55,6 +60,8 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
         CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector  
         Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
         diag(Mt) <- diag(Mt) + C     
+####
+        MtG <- G*C - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,CW*C))
         
         ## prepare resids for testing
         if (nullmod$hetResid){
@@ -71,22 +78,11 @@ nullModelTestPrep <- function(nullmod, idx.exclude = NULL){
     Ytilde <- crossprod(Mt, Y)
     sY2 <- sum(Ytilde^2)
 
-    out <- list(Mt = Mt, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid, family = nullmod$family$family, sample.id = rownames(W))
-    class(out) <- "GENESIS.nullModelPrep"
+    out <- list(Xtilde = MtG, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid, family = nullmod$family$family)
     return(out)
 }
 
 
-
-nullModelBRprep <- function(nullmod){
-    if (nullmod$family$mixedmodel) stop("BinomiRare should be used for IID observations.")
-    if (nullmod$family$family != "binomial") stop("BinomiRare should be used for disease (binomial) outcomes.")
-    
-    probs <- nullmod$fitted.values
-    
-    return(list(D =nullmod$outcome, probs = probs))
-    
-}
 
 
 # this is a fancy way of getting the inverse of the subset without having to get the original matrix
