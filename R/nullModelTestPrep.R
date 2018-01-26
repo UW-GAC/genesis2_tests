@@ -1,28 +1,15 @@
 
 ## takes a null model and prepare specific arguments to streamline the testing
-## idx.exclude are indices of individuals that should be excluded (e.g. because of missing genotypes)
-
-nullModelTestPrep <- function(nullmod, G, idx.exclude = NULL){
+nullModelTestPrep <- function(nullmod, G){
     
-    if (is.null(idx.exclude)){
-        Y <- nullmod$workingY
-        W <- nullmod$model.matrix
-        resid <- nullmod$resid.marginal
-    } else{
-        Y <- nullmod$workingY[-idx.exclude]
-        W <- nullmod$model.matrix[-idx.exclude,]
-        resid <- nullmod$resid.marginal[-idx.exclude]
-    }
-    
+    Y <- nullmod$workingY
+    W <- nullmod$model.matrix
+    resid <- nullmod$resid.marginal
     
     n <- length(Y)
     
     if (nullmod$family$mixedmodel){  ## n by n cholSigmaInv
-        if (is.null(idx.exclude)){
-            C <- nullmod$cholSigmaInv
-        } else{
-            C <- subsetCholSigmaInv(nullmod$cholSigmaInv, idx.exclude)
-        }
+        C <- nullmod$cholSigmaInv
         CW <- crossprod(C, W)
         # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
@@ -46,14 +33,8 @@ nullModelTestPrep <- function(nullmod, G, idx.exclude = NULL){
     if (!nullmod$family$mixedmodel & (nullmod$family$family == "gaussian")){  ## a diagonal or scalar cholSigmaInv
         
         if (nullmod$hetResid)	{  ## cholSigmaInv is diagonal
-            if (is.null(idx.exclude)){
-            	C <- diag(nullmod$cholSigmaInv)
-            } else{
-            	C <- diag(nullmod$cholSigmaInv)[-idx.exclude]
-            }
-        }   
-        
-        if (!nullmod$hetResid) { ## family is "gaussian", cholSigmaInv is a scalar.
+            C <- diag(nullmod$cholSigmaInv)
+        } else { ## family is "gaussian", cholSigmaInv is a scalar.
             C <- nullmod$cholSigmaInv        
         }	
         
@@ -83,6 +64,24 @@ nullModelTestPrep <- function(nullmod, G, idx.exclude = NULL){
 }
 
 
+## idx.exclude are indices of individuals that should be excluded (e.g. because of missing genotypes)
+nullModelSubset <- function(nullmod, idx.exclude){
+    for (v in c("sample.id", "fitted.values", "resid.marginal", "resid.condition", "workingY", "outcome")) {
+        nullmod[[v]] <- nullmod[[v]][-idx.exclude]
+    }
+    nullmod$model.matrix <- nullmod$model.matrix[-idx.exclude,]
+    
+    if (nullmod$family$mixedmodel){  ## n by n cholSigmaInv {
+        nullmod$cholSigmaInv <- subsetCholSigmaInv(nullmod$cholSigmaInv, idx.exclude)
+    }
+    
+    if (!nullmod$family$mixedmodel & (nullmod$family$family == "gaussian")){  ## a diagonal or scalar cholSigmaInv
+        
+        if (nullmod$hetResid)	{  ## cholSigmaInv is diagonal
+            nullmod$cholSigmaInv <- nullmod$cholSigmaInv[-idx.exclude, -idx.exclude]
+        }   
+    }
+}
 
 
 # this is a fancy way of getting the inverse of the subset without having to get the original matrix
