@@ -82,6 +82,8 @@ test_that("nullModelTestPrep vs calculateProjection - binary", {
 	sqrt.cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n, dimnames=list(1:n, 1:n))
 	cor.mat <- crossprod(sqrt.cor.mat)
         
+	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
+        
 ## reps <- 0
 ## varCompZero <- TRUE
 ## while(varCompZero & reps < 10){	

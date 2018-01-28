@@ -4,29 +4,28 @@ nullModelTestPrep <- function(nullmod, G){
     
     Y <- nullmod$workingY
     W <- nullmod$model.matrix
-    resid <- nullmod$resid.marginal
-    
-    n <- length(Y)
-    
+   
     if (nullmod$family$mixedmodel){  ## n by n cholSigmaInv
         C <- nullmod$cholSigmaInv
         CW <- crossprod(C, W)
+        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
+        
         # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
         resid <- as.vector(Mt %*% crossprod(Mt, Y))
-    
-####
-        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
     }
     
     if (!nullmod$family$mixedmodel & (nullmod$family$family != "gaussian")){
+        ## above we use cholSigmaInv, here we use Sigma, but the math is the same.
+        ## why is this case different from the gaussian case below?
         sigma <- sqrt(nullmod$varComp)
-        C <- diag(sigma)
+        C <- Diagonal(x=sigma)
         CW <- W * sigma
+        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
+        
         # Projection matrix P = Mt %*% M
         Mt <- C - tcrossprod(tcrossprod(C, tcrossprod(chol2inv(chol(crossprod(CW))), CW)), CW)
-####
-        MtG <- crossprod(C,G) - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,tcrossprod(C,t(CW))))
+        resid <- nullmod$resid.marginal
     }
 
     
@@ -39,21 +38,20 @@ nullModelTestPrep <- function(nullmod, G){
         }	
         
         CW <- W * C      ## this is equal to crossprod(diag(C), W) when C is a vector  
-        Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
-        diag(Mt) <- diag(Mt) + C     
-####
         MtG <- G*C - tcrossprod(tcrossprod(CW, chol2inv(chol(crossprod(CW)))), crossprod(G,CW*C))
+        
+        Mt <- -tcrossprod(t(tcrossprod(chol2inv(chol(crossprod(CW))), CW))*C, CW)
+        diag(Mt) <- diag(Mt) + C
         
         ## prepare resids for testing
         if (nullmod$hetResid){
             resid <- as.vector(Mt %*% crossprod(Mt, Y))
         } else{
-            resid <- resid/nullmod$varComp
+            resid <- nullmod$resid.marginal/nullmod$varComp
         }
         
     }	
     
-
     
     # phenotype adjusted for the covariates/correlation structure
     Ytilde <- crossprod(Mt, Y)
