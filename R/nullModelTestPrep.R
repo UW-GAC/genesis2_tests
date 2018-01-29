@@ -68,11 +68,7 @@ nullModelTestPrep <- function(nullmod, G){
         
     }	
     
-    
-    
-    sY2 <- sum(Ytilde^2)
-
-    out <- list(Xtilde = MtG, Ytilde = Ytilde, sY2 = sY2, k = ncol(W), resid = resid, family = nullmod$family$family)
+    out <- list(Xtilde = MtG, Ytilde = Ytilde, k = ncol(W), resid = resid, family = nullmod$family$family)
     return(out)
 }
 

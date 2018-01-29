@@ -18,12 +18,12 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     
     if (test == "Wald" & is.null(E)){
         nullprep <- nullModelTestPrep(nullmod, G)
-        res <- .testGenoSingleVarWald(nullprep$Xtilde, nullprep$Ytilde, nullprep$sY2,
+        res <- .testGenoSingleVarWald(nullprep$Xtilde, nullprep$Ytilde,
                                       length(nullprep$Ytilde), nullprep$k)
     }
     
     if (test == "Wald" & !is.null(E)){
-        #res <- .testGenoSingleVarWaldGxE(Mt, G, E, nullprep$Ytilde, nullprep$sY2, n, nullprep$k, GxE.return.cov.mat=GxE.return.cov)
+        #res <- .testGenoSingleVarWaldGxE(Mt, G, E, nullprep$Ytilde, n, nullprep$k, GxE.return.cov.mat=GxE.return.cov)
         stop("GxE not yet implemented")
     }
     
@@ -88,11 +88,12 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 
-.testGenoSingleVarWald <- function(Xtilde, Ytilde, sY2, n, k){
+.testGenoSingleVarWald <- function(Xtilde, Ytilde, n, k){
     #Xtilde <- crossprod(Mt, G) # adjust genotypes for correlation structure and fixed effects
     XtX <- colSums(Xtilde^2) # vector of X^T SigmaInv X (for each SNP)
     XtY <- as.vector(crossprod(Xtilde, Ytilde))
     beta <- XtY/XtX
+    sY2 <- sum(Ytilde^2)
     RSS <- as.numeric((sY2 - XtY * beta)/(n - k - 1))
     Vbeta <- RSS/XtX
     Stat <- beta/sqrt(Vbeta)
@@ -103,11 +104,12 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 ### FIXME to take nullmod object and iterate nullprep over cols in G
-.testGenoSingleVarWaldGxE <- function(Mt, G, E, Ytilde, sY2, n, k, GxE.return.cov.mat = FALSE){
+.testGenoSingleVarWaldGxE <- function(Mt, G, E, Ytilde, n, k, GxE.return.cov.mat = FALSE){
 
     E <- as.matrix(E)
     p <- ncol(G)
     v <- ncol(E) + 1
+    sY2 <- sum(Ytilde^2)
     
     if (GxE.return.cov.mat) {
         res.Vbetas <- vector(mode = "list", length = p)
