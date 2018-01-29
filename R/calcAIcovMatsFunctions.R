@@ -61,6 +61,7 @@
     n <- length(PY)
     
     if (g == 1){
+      if (is.null(PPY)) stop("PPY must not be NULL for length(group.idx) == 1")
 ###        score <-  -0.5*(sum(diag(P)) - crossprod(PY)) 
 ###        AI <- 0.5*crossprod(PY,crossprod(P,PY))
       

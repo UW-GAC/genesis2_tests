@@ -24,7 +24,7 @@
         ## replace with:
         sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, group.idx = group.idx)
                 
-        lq <- .calcLikelihoodQuantities(Y, X, sq$Sigma.inv, diag(sq$cholSigma))
+        lq <- .calcLikelihoodQuantities(Y, X, sq$Sigma.inv, diag(sq$cholSigma), PPY=(g==1))
 
         # print current estimates
         if(verbose) print(c(sigma2.k, lq$logLikR, lq$RSS))

@@ -1,6 +1,6 @@
 
 
-.calcLikelihoodQuantities <- function(Y, X, Sigma.inv, cholSigma.diag){
+.calcLikelihoodQuantities <- function(Y, X, Sigma.inv, cholSigma.diag, PPY=FALSE){
     
     n <- length(Y)
     k <- ncol(X)
@@ -36,9 +36,13 @@
 ###    P <- Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X)
 ###    PY <- crossprod(P, Y)
     PY <- Sigma.inv %*% Y - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(Y) %*% Sigma.inv_X)	  
-#### calculate PPY
-    PPY = crossprod(Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X),PY)    
+    #### calculate PPY
+    if (PPY) {
+        PPY = crossprod(Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X),PY)
+    } else {
+        PPY <- NULL
+    }
 ###    return(list(P= P, PY = PY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = beta, fits = fits, residM = residM))
-    return(list( PY = PY,PPY= PPY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = as.numeric(beta), fits = fits, residM = residM))
+    return(list(PY = PY, PPY= PPY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = as.numeric(beta), fits = fits, residM = residM))
     
 }

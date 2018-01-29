@@ -43,7 +43,7 @@
 ###        Sigma.inv.diag <- 1/diagSigma
         Sigma.inv <- Diagonal(x=1/diagSigma)
     
-        lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag)
+        lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag, PPY=TRUE)
 
         
         
@@ -104,7 +104,7 @@
 ###    Sigma.inv.diag <- 1/diagSigma
     Sigma.inv <- Diagonal(x=1/diagSigma)
     
-    lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag)
+    lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag, PPY=TRUE)
 ###    score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
     score.AI <- .calcAIhetvars(lq$PY, lq$PPY, group.idx,
                                Sigma.inv = Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
