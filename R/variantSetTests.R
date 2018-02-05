@@ -38,7 +38,7 @@ testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT"),
         out <- .testGenoSingleVarScore(nullprep$Xtilde, G = burden, resid = nullprep$resid) 
     }
     if (burden.test == "Wald"){
-        out <- .testGenoSingleVarWald(nullprep$Xtilde, Ytilde = nullprep$Ytilde, sY2 = nullprep$sY2, 
+        out <- .testGenoSingleVarWald(nullprep$Xtilde, Ytilde = nullprep$Ytilde,
                                       n = length(nullprep$Ytilde), k = nullprep$k)
     }
     return(out)
