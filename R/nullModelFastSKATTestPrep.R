@@ -1,3 +1,4 @@
+library(Matrix)
 
 nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10, idx.exclude = NULL){
     require(Matrix)
@@ -31,12 +32,10 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10, idx.exclude = 
 
 .testVariantSetFastSKAT <- function(nullprep, G, weights){
     
-    centeredG <- colMeans(G)
-    ww <- weights(centeredG/2)
-    sparseG <- Matrix(G, sparse = TRUE) %*% Diagonal(x = ww)
+    sparseG <- Matrix(G, sparse = TRUE) %*% Diagonal(x = weights)
     
     rval <- list(mult = function(X){
-    	base::qr.resid(nullprep$qr, as.matrix(solve(nullprep$CholSigma, (spG %*% X))))	
+    	base::qr.resid(nullprep$qr, as.matrix(solve(nullprep$CholSigma, (sparseG %*% X))))	
     }, tmult = function(X){
     	crossprod(spG, solve(t(nullprep$CholSigma), base::qr.resids(nullprep$qr,X)))
     }, 
@@ -52,9 +51,15 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10, idx.exclude = 
     class(rval) <- c("famSKAT_lmekin", "famSKAT", "matrixfree") ## or famSKAT_genesis?
     return(rval)
     
-### or instead directly: ???
-    stdres <- nullprep$SIGMAinv %*% nullprep$resids
-	s = crossprod(sparseG, stdres)
-	pval = pQF(sum(s^2), ...)  ## add arguments here??
+    pval <- pQF(rval$Q(), rval, neig = ) ### what object should be the second entry of pQF??
+    
+    
+# ### or instead directly: ???
+    # stdres <- nullprep$SIGMAinv %*% nullprep$resids
+	# s = crossprod(sparseG, stdres)
+	# pval = pQF(sum(s^2), ...)  ## add arguments here??
 }
+
+
+
 
