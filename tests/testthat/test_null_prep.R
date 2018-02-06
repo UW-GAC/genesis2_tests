@@ -12,19 +12,17 @@ test_that("nullModelTestPrep", {
         
         # basic
 	nullmod <- fitNullModel(y, X, verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
 
-	expect_equal(nullprep$k, ncol(X))
-	expect_equal(dim(nullprep$Xtilde), c(n, ncol(geno)))
-	expect_equal(dim(nullprep$Ytilde), dim(y))
+	expect_equal(dim(Xtilde), c(n, ncol(geno)))
+	expect_equal(dim(nullmod$Ytilde), dim(y))
 
         # with covMatList
 	nullmod <- fitNullModel(y, X, covMatList=cor.mat, verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
 
-	expect_equal(nullprep$k, ncol(X))
-	expect_equal(dim(nullprep$Xtilde), c(n, ncol(geno)))
-	expect_equal(dim(nullprep$Ytilde), dim(y))
+	expect_equal(dim(Xtilde), c(n, ncol(geno)))
+	expect_equal(dim(nullmod$Ytilde), dim(y))
 })
 
 test_that("nullModelTestPrep vs calculateProjection", {
@@ -45,33 +43,33 @@ test_that("nullModelTestPrep vs calculateProjection", {
         
         # basic
 	nullmod <- fitNullModel(y, X, verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
  
         nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), verbose=FALSE)
         proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
 
-        expect_true(all(abs(nullprep$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullprep$resid - proj$resid) < 1e-9))
+        expect_true(all(abs(nullmod$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
+        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with covMatList
 	nullmod <- fitNullModel(y, X, covMatList=cor.mat, verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, verbose=FALSE)
         proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
 
-        expect_true(all(abs(nullprep$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullprep$resid - proj$resid) < 1e-9))
+        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
+        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with group
 	nullmod <- fitNullModel(y, X, group.idx = group.idx, covMatList=cor.mat, verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, group.var="group", verbose=FALSE)
         proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
 
-        expect_true(all(abs(nullprep$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullprep$resid - proj$resid) < 1e-9))
+        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
+        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
 })
 
@@ -111,21 +109,21 @@ test_that("nullModelTestPrep vs calculateProjection - binary", {
 
         # basic
 	nullmod <- fitNullModel(y, X, family="binomial", verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
  
         nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), family="binomial", verbose=FALSE)
         proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
 
-        expect_true(all(abs(nullprep$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullprep$resid - proj$resid) < 1e-9))
+        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
+        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with covMatList
 	nullmod <- fitNullModel(y, X, covMatList=cor.mat, family="binomial", verbose=FALSE)
-	nullprep <- nullModelTestPrep(nullmod, geno)
+        Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, family="binomial", verbose=FALSE)
         proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
 
-        expect_true(all(abs(nullprep$Xtilde - crossprod(proj$Mt, geno)) < 1e-7))
-        expect_true(all(abs(nullprep$resid - proj$resid) < 1e-7))
+        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
+        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-7))
 })

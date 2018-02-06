@@ -9,7 +9,6 @@
 # E an environmntal variable for optional GxE interaction analysis. 
 testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), GxE.return.cov = FALSE){
     test <- match.arg(test)
-
     
     if (test == "Wald" & nullmod$family$family != "gaussian"){
     	test <- "Score"
@@ -17,9 +16,9 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     }
     
     if (test == "Wald" & is.null(E)){
-        nullprep <- nullModelTestPrep(nullmod, G)
-        res <- .testGenoSingleVarWald(nullprep$Xtilde, nullprep$Ytilde,
-                                      length(nullprep$Ytilde), nullprep$k)
+        Xtilde <- calcXtilde(nullmod, G)
+        res <- .testGenoSingleVarWald(Xtilde, nullmod$Ytilde,
+                                      n=length(nullmod$Ytilde), k=ncol(nullmod$model.matrix))
     }
     
     if (test == "Wald" & !is.null(E)){
@@ -28,8 +27,8 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     }
     
     if (test == "Score"){
-        nullprep <- nullModelTestPrep(nullmod, G)
-        res <- .testGenoSingleVarScore(nullprep$Xtilde, G, nullprep$resid)
+        Xtilde <- calcXtilde(nullmod, G)
+        res <- .testGenoSingleVarScore(Xtilde, G, nullmod$resid)
     }
     
     if (test == "BinomiRare"){
@@ -103,7 +102,7 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 }
 
 
-### FIXME to take nullmod object and iterate nullprep over cols in G
+### FIXME to take nullmod object and iterate calcXtilde over cols in G
 .testGenoSingleVarWaldGxE <- function(Mt, G, E, Ytilde, n, k, GxE.return.cov.mat = FALSE){
 
     E <- as.matrix(E)

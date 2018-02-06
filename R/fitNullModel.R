@@ -90,13 +90,14 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
             out <- .nullModOutReg(y, X, mod, family)
         }
         
-    }	
+    }
+
+    nullprep <- nullModelTestPrep(out)
+    out <- c(out, nullprep)
     
-    ## preparing outputs in dedicated functions, add match.call() (Anyting else?)
     out$call <- match.call()
     
-    return(out)	
-    
+    return(out)
     
 }
 
