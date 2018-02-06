@@ -2,7 +2,7 @@
 ## calculate BIC given a parameter vector beta, assuming that all variance components are fixed. 
 ## the BIC is simplifed because we don't need to compare (and therefore to calculate) fixed values between models.
 ## we will need to decide whether this function takes nullmod, or arguments of nullmod.
-## perhaps call the function .calcBICcompareModels or something that reflects that his is not really the BIC,
+## perhaps call the function .calcBICcompareModels or something that reflects that this is not really the BIC,
 ## but rather only an additive value that changes between models under comparison?
 
 .calcBICfixedVCs <- function(nullmod, G, beta){
