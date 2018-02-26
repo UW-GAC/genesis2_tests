@@ -6,10 +6,12 @@
 ## but rather only an additive value that changes between models under comparison?
 
 .calcBICfixedVCs <- function(nullmod, G, beta){
-	n <- length(nullmod$workingY)
-	k <- length(beta)  + nrow(nullmod$fixef) 
-	
-	Sigma.inv <- crossprod(nullmod$cholSigmaInv)
+    X <- nullmod$model.matrix
+    Y <- nullmod$workingY
+    n <- length(nullmod$workingY)
+    k <- length(beta)  + nrow(nullmod$fixef) 
+    
+    Sigma.inv <- crossprod(nullmod$cholSigmaInv)
 
     ## calculate the mean of the outcomes
     fits <- tcrossprod(X, t(nullmod$fixef[,1])) + tcrossprod(G, t(beta))
@@ -28,7 +30,5 @@
     
     #RSS <- as.numeric(Rt_Sigma.inv_R/(n - k)) 
     #logLik <- as.numeric(-0.5 * n * log(2 * pi * RSS) - 0.5 * Rt_Sigma.inv_R/RSS)
-	
-	
-	
+    
 }
