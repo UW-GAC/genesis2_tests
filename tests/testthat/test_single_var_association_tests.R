@@ -65,3 +65,33 @@ test_that("singleVarTest", {
 	expect_equal(colnames(test.score)[1], "Score")
 	expect_equal(test.score$Score.pval, test.wald$Wald.pval, tolerance = 0.01)
 })
+
+
+test_that("GxE", {
+	n <- 100
+	X <- cbind(a=1, b=rnorm(n), c=rbinom(n, size = 1, prob = 0.5))
+	y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
+	
+	### create a matrix of genetic variants to test.
+	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
+
+	nullmod <- fitNullModel(y, X, verbose=FALSE)
+	test.gxe <- testGenoSingleVar(nullmod, G = geno, E = X[,3,drop=FALSE], test = "Wald", GxE.return.cov = TRUE)
+        expect_true(all(c("Est.G:c", "SE.G:c") %in% names(test.gxe$res)))
+        expect_equal(length(test.gxe$GxEcovMatList), ncol(geno))
+
+        res.lm <- test.gxe$res[,1:4]
+        tmp <- data.frame(y, X)
+	for (i in 1:ncol(geno)){
+		lm.temp <- lm("y ~ b + c + g + c:g", data=cbind(tmp, g=geno[,i]))
+		res.lm[i,"Est.G"] <- summary(lm.temp)$coef["g",1]
+		res.lm[i,"SE.G"] <- summary(lm.temp)$coef["g",2]
+		res.lm[i,"Est.G:c"] <- summary(lm.temp)$coef["c:g",1]
+		res.lm[i,"SE.G:c"] <- summary(lm.temp)$coef["c:g",2]
+	}
+	
+        expect_equal(res.lm$Est.G, test.gxe$res$Est.G, tolerance = 1e-8)
+        expect_equal(res.lm$SE.G, test.gxe$res$SE.G, tolerance = 1e-8)
+        expect_equal(res.lm$`Est.G:c`, test.gxe$res$`Est.G:c`, tolerance = 1e-8)
+        expect_equal(res.lm$`SE.G:c`, test.gxe$res$`SE.G:c`, tolerance = 1e-8)
+})

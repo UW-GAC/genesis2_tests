@@ -53,6 +53,7 @@ nullModelTestPrep <- function(nullmod){
 }
 
 
+##  adjust genotypes for correlation structure and fixed effects
 calcXtilde <- function(nullmod, G){
     
     if (nullmod$family$mixedmodel){  ## n by n cholSigmaInv

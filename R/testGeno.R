@@ -6,7 +6,7 @@
 ## Variant set: SKAT, burden, SKAT-O. Multiple types of p-values. Default: Davis with Koenen if does not converge. 
 
 
-# E an environmntal variable for optional GxE interaction analysis. 
+# E an environmental variable for optional GxE interaction analysis. 
 testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), GxE.return.cov = FALSE){
     test <- match.arg(test)
     
@@ -22,8 +22,7 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     }
     
     if (test == "Wald" & !is.null(E)){
-        #res <- .testGenoSingleVarWaldGxE(Mt, G, E, nullprep$Ytilde, n, nullprep$k, GxE.return.cov.mat=GxE.return.cov)
-        stop("GxE not yet implemented")
+        res <- .testGenoSingleVarWaldGxE(nullmod, G, E, GxE.return.cov.mat=GxE.return.cov)
     }
     
     if (test == "Score"){
@@ -74,7 +73,6 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 .testGenoSingleVarScore <- function(Xtilde, G, resid){
-    #Xtilde <- crossprod(Mt, G) # adjust genotypes for correlation structure and fixed effects
     XtX <- colSums(Xtilde^2) # vector of X^T P X (for each SNP) b/c (M^T M) = P
     score <- as.vector(crossprod(G, resid)) # X^T P Y
     Stat <- score/sqrt(XtX)
@@ -88,7 +86,6 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 .testGenoSingleVarWald <- function(Xtilde, Ytilde, n, k){
-    #Xtilde <- crossprod(Mt, G) # adjust genotypes for correlation structure and fixed effects
     XtX <- colSums(Xtilde^2) # vector of X^T SigmaInv X (for each SNP)
     XtY <- as.vector(crossprod(Xtilde, Ytilde))
     beta <- XtY/XtX
@@ -103,12 +100,14 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 ### FIXME to take nullmod object and iterate calcXtilde over cols in G
-.testGenoSingleVarWaldGxE <- function(Mt, G, E, Ytilde, n, k, GxE.return.cov.mat = FALSE){
+.testGenoSingleVarWaldGxE <- function(nullmod, G, E, GxE.return.cov.mat = FALSE){
 
     E <- as.matrix(E)
     p <- ncol(G)
     v <- ncol(E) + 1
-    sY2 <- sum(Ytilde^2)
+    n <- length(nullmod$Ytilde)
+    k <- ncol(nullmod$model.matrix)
+    sY2 <- sum(nullmod$Ytilde^2)
     
     if (GxE.return.cov.mat) {
         res.Vbetas <- vector(mode = "list", length = p)
@@ -116,22 +115,23 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     
     intE <- cbind(1, E) # add intercept the "Environmental" variable E.
     
-    var.names <- c("G", paste0("G", colnames(E), sep = ":"))
+    var.names <- c("G", paste("G", colnames(E), sep = ":"))
     
     res <- matrix(NA, nrow = p, ncol = length(var.names)*2 + 2,
                   dimnames = list(NULL, 
                                   c(paste0("Est.", var.names), paste0("SE.", var.names), "GxE.Stat", "Joint.Stat" ) ))
-    
-    if (ncol(E) == 1) res[,"cov.G.E"] <- NA
+
+    # what is this supposed to do?
+    #if (ncol(E) == 1) res[,"cov.G.E"] <- NA
     
     for (g in 1:p) {
-        Xtilde <- crossprod(Mt, G[, g] * intE)
+        Xtilde <- calcXtilde(nullmod, G[, g] * intE)
         XtX <- crossprod(Xtilde)
         XtXinv <- tryCatch(chol2inv(chol(XtX)), error = function(e) {TRUE}) # this is inverse A matrix of sandwich
         # check that the error function above hasn't been called (which returns TRUE instead of the inverse matrix)
         if (is.logical(XtXinv)) next
         
-        XtY <- crossprod(Xtilde, Ytilde)
+        XtY <- crossprod(Xtilde, nullmod$Ytilde)
         betas <- crossprod(XtXinv, XtY)
         res[g, grep("Est", colnames(res))] <- betas
         
@@ -142,9 +142,9 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
             res.Vbetas[[g]] <- Vbetas
         }
         
-        res[g, grep(colnames(res), "SE")] <- sqrt(diag(Vbetas))
+        res[g, grep("SE", colnames(res))] <- sqrt(diag(Vbetas))
         
-        res[g, "GxE.stat"] <- tryCatch(crossprod(betas[-1],
+        res[g, "GxE.Stat"] <- tryCatch(crossprod(betas[-1],
                                                  crossprod(chol2inv(chol(Vbetas[-1, -1])),
                                                            betas[-1])), 
                                        error = function(e) { NA })
@@ -154,10 +154,10 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
                                          error = function(e) { NA })
     }
     
-    res[,"GxE.pval"] <- pchisq(res[,"GxE.Stat"], df = (v - 1), lower.tail = FALSE)
-    res[,"Joint.pval"] <- pchisq(res[,"Joint.Stat"], df = v, lower.tail = FALSE)
-    
     res <- as.data.frame(res)
+    res$GxE.pval <- pchisq(res$GxE.Stat, df = (v - 1), lower.tail = FALSE)
+    res$Joint.pval <- pchisq(res$Joint.Stat, df = v, lower.tail = FALSE)
+    
     if (GxE.return.cov.mat) {
         return(list(res = res, GxEcovMatList = res.Vbetas))
     } else {
@@ -167,18 +167,17 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 
 
 
-## G is an n by v matrix of 2 or more columns, all representing allels of the same (multi-allelic) variant. 
-.testSingleVarMultAlleles <- function(Xtilde, Ytilde, sY2, n, k){
-    v <- ncol(G)
+## G is an n by v matrix of 2 or more columns, all representing alleles of the same (multi-allelic) variant. 
+.testSingleVarMultAlleles <- function(Xtilde, Ytilde, n, k){
+    v <- ncol(Xtilde)
     
-    var.names <- colnames(G)
+    var.names <- colnames(Xtilde)
     
     res <- matrix(NA, nrow = 1, ncol = length(var.names)*2 + 2,
                   dimnames = list(NULL, 
                                   c(paste0("Est.", var.names), paste0("SE.", var.names), "Joint.Stat", "Joint.Pval" ) ))
     
     
-    #Xtilde <- crossprod(Mt, G)
     XtX <- crossprod(Xtilde)
     XtXinv <- tryCatch(chol2inv(chol(XtX)), error = function(e) {TRUE})
     
@@ -188,6 +187,7 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
     betas <- crossprod(XtXinv, XtY) ## effect estimates of the various alleles
     res[1, grep("Est", colnames(res))] <- betas
     
+    sY2 <- sum(Ytilde^2)
     RSS <- as.numeric((sY2 - crossprod(XtY, betas))/(n - k - v))
     Vbetas <- XtXinv * RSS
     
