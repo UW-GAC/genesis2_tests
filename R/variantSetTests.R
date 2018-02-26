@@ -5,7 +5,7 @@
 ## Variant set: SKAT, burden, SKAT-O. Multiple types of p-values. Default: Davies with Kuonen if does not converge. 
 
 
-testVariantSet <- function(nullprep, G, weights, test = c("Burden", "SKAT"), 
+testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT"), 
                            burden.test = c("Score", "Wald"),  rho = 0,
                            pval.method = c("davies", "kuonen", "liu"), 
                            return.scores = FALSE, return.scores.cov = FALSE){
@@ -13,13 +13,13 @@ testVariantSet <- function(nullprep, G, weights, test = c("Burden", "SKAT"),
     test <- match.arg(test)
     burden.test <- match.arg(burden.test)
     pval.method <- match.arg(pval.method)
-    
+
     if (test == "SKAT") {
-        out <- .testVariantSetSKAT(nullprep, G, weights, rho, pval.method, 
+        out <- .testVariantSetSKAT(nullmod, G, weights, rho, pval.method, 
                                    return.scores, return.scores.cov)
     }    
     if (test == "Burden") {
-        out <- .testVariantSetBurden(nullprep, G, weights, burden.test)
+        out <- .testVariantSetBurden(nullmod, G, weights, burden.test)
     }
     return(out)
 }
@@ -28,26 +28,30 @@ testVariantSet <- function(nullprep, G, weights, test = c("Burden", "SKAT"),
 
 ## create the burden score, than calls the appropriate single variant test function. 
 ## can easily implement GxE interaction with the burden score... later!
-.testVariantSetBurden <- function(nullprep, G, weights, burden.test){
+.testVariantSetBurden <- function(nullmod, G, weights, burden.test){
     
-    burden <- colSums(t(G) * weights)
+    burden <- matrix(colSums(t(G) * weights))
+    
+    Xtilde <- calcXtilde(nullmod, burden)
+    
     if (burden.test == "Score") {
-        out <- .testGenoSingleVarScore(nullprep$Mt, G = matrix(burden), resid = nullprep$resid) 
+        out <- .testGenoSingleVarScore(Xtilde, G = burden, resid = nullmod$resid) 
     }
     if (burden.test == "Wald"){
-        out <- .testGenoSingleVarWald(nullprep$Mt, G = matrix(burden), Ytilde = nullprep$Ytilde, sY2 = nullprep$sY2, 
-                               n = length(nullprep$Ytilde), k = nullprep$k)
+        out <- .testGenoSingleVarWald(Xtilde, Ytilde = nullmod$Ytilde,
+                                      n = length(nullmod$Ytilde), k = ncol(nullmod$model.matrix))
     }
     return(out)
 }
 
 
 
-.testVariantSetSKAT <- function(nullprep, G, weights, rho = 0, pval.method, 
+.testVariantSetSKAT <- function(nullmod, G, weights, rho = 0, pval.method, 
                                 return.scores = FALSE, return.scores.cov = FALSE){
-    
-    U <- as.vector(crossprod(G, nullprep$resid))
-    G <- crossprod(nullprep$Mt, G)
+
+    U <- as.vector(crossprod(G, nullmod$resid))
+    #G <- crossprod(nullprep$Mt, G)
+    G <- calcXtilde(nullmod, G)
     if (length(rho) == 1) {
         out <- .runSKATTest(scores = U, geno.adj = G,
                             weights = weights, rho = rho, pval.method = pval.method,
@@ -101,7 +105,7 @@ testVariantSet <- function(nullprep, G, weights, test = c("Burden", "SKAT"),
 
         # p value calculation
         if(length(scores) == 1){
-            pval <- pchisq(Q/distMat, df=1, lower.tail=FALSE)
+            pval <- pchisq(as.numeric(Q/distMat), df=1, lower.tail=FALSE)
             err <- 0
 
         }else{

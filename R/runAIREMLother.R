@@ -3,7 +3,6 @@
     
     m <- length(covMatList)
     n <- length(Y)
-    k <- ncol(X)
     
     # initial values for variance components
     if(is.null(start)){
@@ -22,7 +21,8 @@
         if (sum(zeroFLAG) == m)  return(list(allZero = TRUE))
         
         sq <- .computeSigmaQuantities(varComp = sigma2.k, covMatList = covMatList, vmu = vmu, gmuinv = gmuinv )     
-        lq <- .calcLikelihoodQuantities(Y, X, n, k, sq$Sigma.inv, diag(sq$cholSigma))
+        lq <- .calcLikelihoodQuantities(Y, X, sq$Sigma.inv, diag(sq$cholSigma))
+
 
         
         # print current estimates
@@ -30,7 +30,10 @@
 
         if(reps > 1){
             # Average Information and Scores
-            covMats.score.AI <- .calcAIcovMats(Y, lq$P, lq$PY, covMatList)
+### more arguments
+            covMats.score.AI <- .calcAIcovMats(Y, #lq$P,
+                                               lq$PY, covMatList,
+                                               Sigma.inv = sq$Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             AI <- covMats.score.AI$AI
             score <- covMats.score.AI$score
             
@@ -81,8 +84,17 @@
             # EM step
             sigma2.kplus1 <- rep(NA,m)
             for(i in 1:m){
-                PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
-                sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
+###                PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
+###                sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
+                PAPY <- sq$Sigma.inv %*% crossprod(covMatList[[i]],lq$PY) - tcrossprod(tcrossprod(lq$Sigma.inv_X, lq$Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],lq$PY)) %*% lq$Sigma.inv_X)	  
+                trPA.part1 <- sum( sq$Sigma.inv * covMatList[[i]] )
+                trPA.part2 <- sum(diag( 
+                    (crossprod( lq$Sigma.inv_X, covMatList[[i]]) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv
+                ))
+                trPA <-  trPA.part1 - trPA.part2
+              
+                sigma2.kplus1[i] <- as.numeric((1/n)*(sigma2.k[i]^2*crossprod(Y,PAPY) + n*sigma2.k[i] - sigma2.k[i]^2*trPA ))
+              
             }
             sigma2.k <- sigma2.kplus1
         }
@@ -92,7 +104,7 @@
     
     # linear predictor
     VinvR <- crossprod(sq$Sigma.inv, lq$residM)
-    eta <- lq$fits + crossprod(sq$Vre, VinvR) # X\beta + Zb   
+    eta <- as.numeric(lq$fits + crossprod(sq$Vre, VinvR)) # X\beta + Zb
     
     return(list(allZero = FALSE, varComp = sigma2.k, AI = AI, converged = converged, zeroFLAG = zeroFLAG, beta = lq$beta,  residM = lq$residM,  eta = eta, logLikR=lq$logLikR, logLik=lq$logLik, RSS=lq$RSS, fits = lq$fits))
 

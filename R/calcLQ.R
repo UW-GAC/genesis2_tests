@@ -1,10 +1,16 @@
 
 
-.calcLikelihoodQuantities <- function(Y, X, n, k, Sigma.inv, cholSigma.diag){
+.calcLikelihoodQuantities <- function(Y, X, Sigma.inv, cholSigma.diag, PPY=FALSE){
+    
+    n <- length(Y)
+    k <- ncol(X)
     
     ### Calulate the weighted least squares estimate
     Sigma.inv_X <- crossprod(Sigma.inv, X)
-    chol.Xt_Sigma.inv_X <- chol(crossprod(X, Sigma.inv_X))
+###    chol.Xt_Sigma.inv_X <- chol(crossprod(X, Sigma.inv_X))
+    tempXXX <- crossprod(X, Sigma.inv_X)
+    tempXXX <- (tempXXX + t(tempXXX))/2    
+    chol.Xt_Sigma.inv_X <- chol(tempXXX)
     Xt_Sigma.inv_X.inv <- chol2inv(chol.Xt_Sigma.inv_X)
     beta <- crossprod(Xt_Sigma.inv_X.inv, crossprod(Sigma.inv_X, Y))
     
@@ -27,10 +33,16 @@
     
     
     ## calculate projection matrix.
-    P <- Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv),
-                                Sigma.inv_X)
-    PY <- crossprod(P, Y)
+###    P <- Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X)
+###    PY <- crossprod(P, Y)
+    PY <- Sigma.inv %*% Y - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), t(Y) %*% Sigma.inv_X)	  
+    #### calculate PPY
+    if (PPY) {
+        PPY = crossprod(Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X),PY)
+    } else {
+        PPY <- NULL
+    }
+###    return(list(P= P, PY = PY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = beta, fits = fits, residM = residM))
+    return(list(PY = PY, PPY= PPY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = as.numeric(beta), fits = fits, residM = residM))
     
-    return(list(P= P, PY = PY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = beta, fits = fits, residM = residM))
-
 }

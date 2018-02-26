@@ -2,7 +2,7 @@
 
 
 ### preparing output arguments for regression models that are not mixed. To match mixed models, 
-## we call "sigma" varComp (because it can be viewd as a type of variance component)
+## we call "sigma" varComp (because it can be viewed as a type of variance component)
 .nullModOutReg <- function(y, X, mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
@@ -23,8 +23,8 @@
     resid.marginal <-  residuals(mod, type = "response")
     logLik <- as.numeric(logLik(mod))
     AIC <- AIC(mod)
-    workingY <- y
-    outcome <- y
+    workingY <- drop(y)
+    outcome <- drop(y)
     model.matrix <- X
     cholSigmaInv <- sqrt(1/varComp)
     converged <- ifelse(family$family == "gaussian", TRUE, mod$converged)
@@ -41,6 +41,7 @@
                 converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS )
     class(out) <- "GENESIS.nullModel"
     return(out)
+
 }
 
 
@@ -63,15 +64,15 @@
     
     hetResid <- TRUE
     varNames <- colnames(X) 
-    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
+###    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
     
     ### in future version, using Matrix package, we will have: 
-    ### cholSigmaInv <- Diagonal(sqrt(diag(vc.mod$Sigma.inv)))
+    cholSigmaInv <- Diagonal(x=sqrt(diag(vc.mod$Sigma.inv)))
     
     RSS <- vc.mod$RSS
    
-    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
-    # betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+###    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
+    betaCov <- as.matrix(RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X)))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -89,10 +90,10 @@
     
     eta <- vc.mod$eta
     
-    workingY <- y
-    outcome <- y
+    workingY <- drop(y)
+    outcome <- drop(y)
     
-    resid.conditional <- as.vector(workingY - eta) ### should be the same as resid.marginal
+    resid.conditional <- drop(workingY - eta) ### should be the same as resid.marginal
     
     model.matrix <- X 
     
@@ -107,7 +108,8 @@
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
                 outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
-                cholSigmaInv = cholSigmaInv.diag, 
+###                cholSigmaInv = cholSigmaInv.diag, 
+                cholSigmaInv = cholSigmaInv, 
                 converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS )
     class(out) <- "GENESIS.nullModel"
     return(out)
@@ -119,7 +121,7 @@
 
 
 
-.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, use.sparsity = FALSE, dropZeros = TRUE){
+.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, dropZeros = TRUE){
     n <- nrow(X)
     k <- ncol(X)
     m <- length(covMatList)
@@ -170,21 +172,23 @@
     
 
     # Constructing the covariance Matrix
-    Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
-    if(g > 0){
-        diagV <- rep(0,n)
-        for(i in 1:g){
-            diagV[group.idx[[i]]] <- varComp[m+i]
-        }
-        diag(Sigma) <- diag(Sigma) + diagV
-    }
-    if (family$family != "gaussian"){
-        Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
-    }
+    ## Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
+    ## if(g > 0){
+    ##     diagV <- rep(0,n)
+    ##     for(i in 1:g){
+    ##         diagV[group.idx[[i]]] <- varComp[m+i]
+    ##     }
+    ##     diag(Sigma) <- diag(Sigma) + diagV
+    ## }
+    ## if (family$family != "gaussian"){
+    ##     Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
+    ## }
 
-    SigmaInv <- chol2inv(chol(Sigma))
+    ## SigmaInv <- chol2inv(chol(Sigma))
+    sq <- .computeSigmaQuantities(varComp = varComp, covMatList = covMatList, group.idx = group.idx, vmu = vmu, gmuinv = gmuinv)
     # Cholesky Decomposition
-    cholSigmaInv <- t(chol(SigmaInv))
+    ## cholSigmaInv <- t(chol(SigmaInv))
+    cholSigmaInv <- t(chol(sq$Sigma.inv))
     dimnames(cholSigmaInv) <- list(colnames(covMatList[[1]]), colnames(covMatList[[1]]))
     
 
@@ -192,7 +196,7 @@
     
     RSS <- ifelse(family$family == "gaussian", vc.mod$RSS, 1)
     
-    betaCov <- RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X))))
+    betaCov <- as.matrix(RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X)))))
     dimnames(betaCov) <- list(varNames, varNames)
     
     SE <- sqrt(diag(betaCov))
@@ -210,10 +214,10 @@
     
     eta <- vc.mod$eta
     
-    workingY <- workingY
-    outcome <- y
+    workingY <- drop(workingY)
+    outcome <- drop(y)
     
-    resid.conditional <-  as.vector(drop(workingY) - vc.mod$eta) ### 
+    resid.conditional <-  drop(workingY - vc.mod$eta) ### 
     
     model.matrix <- X 
     

@@ -21,7 +21,7 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
                          AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
     
     if(!is.null(covMatList)){
-        if (class(covMatList) == "matrix"){
+        if (!is.list(covMatList)){
             covMatList <- list(A = covMatList)
         }
     } 
@@ -61,7 +61,7 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
             			group.idx = group.idx, AIREML.tol = AIREML.tol, dropZeros = dropZeros,  
             			maxIter = maxIter,  verbose = verbose)
             out <- .nullModOutMM(y = y, workingY = y,  X = X, vc.mod = vc.mod, 
-            					family = family, covMatList = covMatList, 
+                                 family = family, covMatList = covMatList, 
                                  group.idx = group.idx, dropZeros = dropZeros)
         }
     } 
@@ -90,18 +90,14 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
             out <- .nullModOutReg(y, X, mod, family)
         }
         
-    }	
+    }
+
+    nullprep <- nullModelTestPrep(out)
+    out <- c(out, nullprep)
     
-    
-    ## prepare output arguments. 
-    ## First put arguments that are outputted using all regression models. 
-    ## Then add arguments to the list according to the type of model. 
-    
-    ## preparing outputs in dedicated functions, add match.call() (Anyting else?)
     out$call <- match.call()
     
-    return(out)	
-    
+    return(out)
     
 }
 
@@ -122,52 +118,49 @@ fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "ga
 }
 
 
-
-
 .iterateAIREMLworkingY <- function(glm.mod, X, family, start = NULL, covMatList, AIREML.tol = 1e-6,
-						 dropZeros = TRUE, maxIter = 100, verbose = TRUE){
-	y <- glm.mod$y
-	eta <- glm.mod$linear.predictors
-	working.y <- .calcWorkingYnonGaussian(y, eta, family)
-	newstart <- start
-	Yreps <- 0
-	
-	repeat({
-		Yreps <- Yreps + 1
-		if(verbose) message("Computing Variance Component Estimates...")
-		if(verbose) message(paste(paste("Sigma^2_",c(names(covMatList)),sep="", collapse="     "), "log-lik", "RSS", sep="     "))
-                
-		# estimate variance components
-		vc.mod <- .runAIREMLother(Y=working.y$Y, X=X, start=newstart, covMatList=covMatList, 
-									AIREML.tol=AIREML.tol, dropZeros=dropZeros, maxIter=maxIter, 
-									verbose=verbose, vmu=working.y$vmu, gmuinv=working.y$gmuinv)
-                
-		if (vc.mod$allZero == TRUE) {
-			message("All variance components estimated as zero, using glm...")
-			break()
-		}
-		# update parameters
-		if(verbose) message("Updating WorkingY Vector...")
-		working.y <- .calcWorkingYnonGaussian(y, vc.mod$eta, family)
-                
-		# current variance component estimate
-		newstart <- vc.mod$varComp
-		newstart[vc.mod$zeroFLAG] <- AIREML.tol
-                
-		# test for convergence
-		stat <- sqrt(sum((vc.mod$eta - eta)^2))
-		if(verbose) message(paste("Checking for Convergence...", stat, sep = "\t"))
-		eta <- vc.mod$eta
-		if(stat < AIREML.tol){ break() }
-		
-		if(Yreps == maxIter){
-			vc.mod$converged <- FALSE
-			warning("Maximum number of iterations for workingY reached without convergence!")
-			break()
-		}
-	})
-
-	return(list(vc.mod = vc.mod, working.y = working.y))
-	
+                                   dropZeros = TRUE, maxIter = 100, verbose = TRUE){
+    y <- glm.mod$y
+    eta <- glm.mod$linear.predictors
+    working.y <- .calcWorkingYnonGaussian(y, eta, family)
+    newstart <- start
+    Yreps <- 0
+    
+    repeat({
+        Yreps <- Yreps + 1
+        if(verbose) message("Computing Variance Component Estimates...")
+        if(verbose) message(paste(paste("Sigma^2_",c(names(covMatList)),sep="", collapse="     "), "log-lik", "RSS", sep="     "))
+        
+        # estimate variance components
+        vc.mod <- .runAIREMLother(Y=working.y$Y, X=X, start=newstart, covMatList=covMatList, 
+                                  AIREML.tol=AIREML.tol, dropZeros=dropZeros, maxIter=maxIter, 
+                                  verbose=verbose, vmu=working.y$vmu, gmuinv=working.y$gmuinv)
+        
+        if (vc.mod$allZero == TRUE) {
+            message("All variance components estimated as zero, using glm...")
+            break()
+        }
+        # update parameters
+        if(verbose) message("Updating WorkingY Vector...")
+        working.y <- .calcWorkingYnonGaussian(y, vc.mod$eta, family)
+        
+        # current variance component estimate
+        newstart <- vc.mod$varComp
+        newstart[vc.mod$zeroFLAG] <- AIREML.tol
+        
+        # test for convergence
+        stat <- sqrt(sum((vc.mod$eta - eta)^2))
+        if(verbose) message(paste("Checking for Convergence...", stat, sep = "\t"))
+        eta <- vc.mod$eta
+        if(stat < AIREML.tol){ break() }
+        
+        if(Yreps == maxIter){
+            vc.mod$converged <- FALSE
+            warning("Maximum number of iterations for workingY reached without convergence!")
+            break()
+        }
+    })
+    
+    return(list(vc.mod = vc.mod, working.y = working.y))
+    
 }
-
