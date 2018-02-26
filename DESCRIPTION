@@ -1,5 +1,5 @@
 Package: genesis2tests
-Version: 0.2.0
+Version: 0.2.1
 Type: Package
 Title: genesis assocation testing code rewrite
 Description: null model and association testing.
@@ -7,7 +7,7 @@ Author: Matthew P. Conomos, Stephanie M. Gogarten, Tamar Sofer, Ken Rice, Chaoyu
 Maintainer: Stephanie M. Gogarten <sdmorris@uw.edu>
 Depends: 
 Imports: stats, Matrix
-Suggests: CompQuadForm, survey, roxygen2, testthat, GENESIS
+Suggests: CompQuadForm, survey, poibin, roxygen2, testthat, GENESIS
 License: GPL-3
 biocViews: SNP, GeneticVariability, Genetics, StatisticalMethod
 NeedsCompilation: no

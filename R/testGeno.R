@@ -44,30 +44,29 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 ## needs to be such that alt allele is minor allele, or the function checks for it, or a vector of 
 ## indicators or of frequencies would be provided. 
 .testGenoSingleVarBR <- function(D, probs, G){
-		require(poibin)
-		res <- data.frame(n.carrier = NA, n.D.carrier = NA, expected.n.D.carrier = NA, pval = NA, stringsAsFactors = F)
-	
-	for (i in 1:ncol(G)){
-		carrier.inds <- which(G[,i] > 0)
-		res$n.carrier[i] <- length(carrier.inds)
-		cur.prob.vec <- probs[carrier.inds]
-		res$expected.n.D.carrier[i] <- sum(cur.prob.vec)
-		res$n.D.carrier[i] <- sum(d[carrier.inds])
-		
-		res$pval[i] <- .poibinMidp(n.carrier = res$n.carrier[i], n.D.carrier = res$n.D.carrier[i], prob.vec = cur.prob.vec)		 
-	}
+    if (!requireNamespace("poibin")) stop("package 'poibin' must be installed for the BinomiRare test")
+    res <- data.frame(n.carrier = NA, n.D.carrier = NA, expected.n.D.carrier = NA, pval = NA)
+    
+    for (i in 1:ncol(G)){
+        carrier.inds <- which(G[,i] > 0)
+        res$n.carrier[i] <- length(carrier.inds)
+        cur.prob.vec <- probs[carrier.inds]
+        res$expected.n.D.carrier[i] <- sum(cur.prob.vec)
+        res$n.D.carrier[i] <- sum(D[carrier.inds])
+        
+        res$pval[i] <- .poibinMidp(n.carrier = res$n.carrier[i], n.D.carrier = res$n.D.carrier[i], prob.vec = cur.prob.vec)		 
+    }
 
-	
-	return(res)
+    return(res)
 }
 
 
 .poibinMidp <- function(n.carrier, n.D.carrier, prob.vec){
-	stopifnot(n.D.carrier <= n.carrier, length(prob.vec) == n.carrier)
-	d.poibin <- dpoibin(0:n.carrier, prob.vec)
-	prob.cur <- d.poibin[n.D.carrier + 1]
-	mid.p <- 0.5*prob.cur + sum(d.poibin[d.poibin < prob.cur])
-	return(mid.p)
+    stopifnot(n.D.carrier <= n.carrier, length(prob.vec) == n.carrier)
+    d.poibin <- poibin::dpoibin(0:n.carrier, prob.vec)
+    prob.cur <- d.poibin[n.D.carrier + 1]
+    mid.p <- 0.5*prob.cur + sum(d.poibin[d.poibin < prob.cur])
+    return(mid.p)
 }
 
 
