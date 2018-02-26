@@ -1,28 +1,21 @@
 
-nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10, idx.exclude = NULL){
+nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
     
-    if (is.null(idx.exclude)){
-        Y <- nullmod$workingY
-        W <- nullmod$model.matrix
-        C <- nullmod$cholSigmaInv
-    } else{
-        Y <- nullmod$workingY[-idx.exclude]
-        W <- nullmod$model.matrix[-idx.exclude,]
-        C <- subsetCholSigmaInv(nullmod$cholSigmaInv, idx.exclude)
-    }
+    Y <- nullmod$workingY
+    W <- nullmod$model.matrix
+    C <- nullmod$cholSigmaInv
     
-    sparseC <- Matrix(C)	
-	SIGMA <- chol2inv(t(C))
-	SIGMA[abs(SIGMA) < threshold] <- 0
-	SIGMA <- Matrix(SIGMA)
-	CholSigma <- t(chol(SIGMA)) 
-	SIGMAinv <- tcrossprod(sparseC)
-	
-	qr <- qr(as.matrix(solve(CholSigma,W)))
+    #sparseC <- Matrix(C) # should be already a Matrix
+    SIGMA <- chol2inv(t(C))
+    SIGMA[abs(SIGMA) < threshold] <- 0
+    SIGMA <- Matrix(SIGMA)
+    CholSigma <- t(chol(SIGMA)) 
+    SIGMAinv <- tcrossprod(C)
+    
+    qr <- qr(as.matrix(solve(CholSigma,W)))
 
 
     out <- list(CholSigma = CholSigma, SIGMAinv = SIGMAinv, qr = qr, resids = nullmod$resid.marginal)
- #   class(out) <- "GENESIS.nullModelPrep"
     return(out)
 }
 
@@ -35,7 +28,7 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10, idx.exclude = 
     rval <- list(mult = function(X){
     	base::qr.resid(nullprep$qr, as.matrix(solve(nullprep$CholSigma, (sparseG %*% X))))	
     }, tmult = function(X){
-    	crossprod(sparseG, solve(t(nullprep$CholSigma), base::qr.resids(nullprep$qr,X)))
+    	crossprod(sparseG, solve(t(nullprep$CholSigma), base::qr.resid(nullprep$qr,X)))
     }, 
     trace = NULL,
     ncol = ncol(G),
