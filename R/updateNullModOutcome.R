@@ -3,7 +3,7 @@
 
 ## the names of items in the list group.idx have to match the names of the corresponding variance components!
 
-updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("None", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
+updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("none", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
 
     rankNorm.option <- match.arg(rankNorm.option)
     rescale <- match.arg(rescale)
@@ -25,12 +25,12 @@ updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c
     }
     
     ## checks that may be put into wrapper:
-    if ((rescale != "None") & is.null(group.idx)) stop("Rescaling is only done by groups, and group indices are missing.") 
+    if ((rescale != "none") & is.null(group.idx)) stop("Rescaling is only done by groups, and group indices are missing.") 
     
     if (rankNorm.option == "by.group" & is.null(group.idx)) stop("Cannot rank normalize by group, missing group indices.")
     
     
-    if (rescale == "None"){
+    if (rescale == "none"){
         group.vars <- rep(1, g)
     } else{
         group.vars <- rep(NA, g)
