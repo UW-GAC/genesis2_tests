@@ -11,14 +11,14 @@ test_that("nullModelTestPrep", {
 	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
         
         # basic
-	nullmod <- fitNullModel(y, X, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
 
 	expect_equal(dim(Xtilde), c(n, ncol(geno)))
 	expect_equal(dim(nullmod$Ytilde), dim(y))
 
         # with covMatList
-	nullmod <- fitNullModel(y, X, covMatList=cor.mat, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, covMatList=cor.mat, verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
 
 	expect_equal(dim(Xtilde), c(n, ncol(geno)))
@@ -42,7 +42,7 @@ test_that("nullModelTestPrep vs calculateProjection", {
         dat$group[group.idx[[2]]] <- 2
         
         # basic
-	nullmod <- fitNullModel(y, X, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
  
         nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), verbose=FALSE)
@@ -52,7 +52,7 @@ test_that("nullModelTestPrep vs calculateProjection", {
         expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with covMatList
-	nullmod <- fitNullModel(y, X, covMatList=cor.mat, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, covMatList=cor.mat, verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, verbose=FALSE)
@@ -62,7 +62,7 @@ test_that("nullModelTestPrep vs calculateProjection", {
         expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with group
-	nullmod <- fitNullModel(y, X, group.idx = group.idx, covMatList=cor.mat, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, group.idx = group.idx, covMatList=cor.mat, verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, group.var="group", verbose=FALSE)
@@ -108,7 +108,7 @@ test_that("nullModelTestPrep vs calculateProjection - binary", {
 ## if (varCompZero) stop("could not generate nonzero varComp")
 
         # basic
-	nullmod <- fitNullModel(y, X, family="binomial", verbose=FALSE)
+	nullmod <- fitNullMod(y, X, family="binomial", verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
  
         nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), family="binomial", verbose=FALSE)
@@ -118,7 +118,7 @@ test_that("nullModelTestPrep vs calculateProjection - binary", {
         expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
         
         # with covMatList
-	nullmod <- fitNullModel(y, X, covMatList=cor.mat, family="binomial", verbose=FALSE)
+	nullmod <- fitNullMod(y, X, covMatList=cor.mat, family="binomial", verbose=FALSE)
         Xtilde <- calcXtilde(nullmod, geno)
 
         nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, family="binomial", verbose=FALSE)

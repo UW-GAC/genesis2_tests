@@ -10,7 +10,7 @@ test_that("singleVarTest", {
 	### create a matrix of genetic variants to test.
 	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
 
-	nullmod <- fitNullModel(y, X, group.idx = group.idx, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, group.idx = group.idx, verbose=FALSE)
 	test.wald <- testGenoSingleVar(nullmod, G = geno, test = "Wald")
 	
 	# compare to weighted least squares using weighted lm:	
@@ -25,7 +25,7 @@ test_that("singleVarTest", {
 
 
         # without group
-	nullmod <- fitNullModel(y, X, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, verbose=FALSE)
         test.wald <- testGenoSingleVar(nullmod, G = geno, test = "Wald")
         
         res.lm <- test.wald
@@ -49,7 +49,7 @@ test_that("singleVarTest", {
 		
 	
 	for (i in 1:ncol(geno)){
-		nullmod <- fitNullModel(D, cbind(X, geno[,i]), family = "binomial", verbose=FALSE)
+		nullmod <- fitNullMod(D, cbind(X, geno[,i]), family = "binomial", verbose=FALSE)
 		test.wald[i,] <- nullmod$fixef[4,]
                 glm.temp <-  glm(D ~ -1 + X + geno[,i], family = "binomial")
                 res.glm[i,] <- summary(glm.temp)$coef[4,]
@@ -59,7 +59,7 @@ test_that("singleVarTest", {
 	expect_equal(res.glm$Wald.Stat, test.wald$Wald.Stat, tolerance = 1e-8)
 	
 	## check that we get appropriate error when using the wald test instead of score with binomial outcomes:
-	nullmod <- fitNullModel(D, X, family = "binomial", verbose=FALSE)
+	nullmod <- fitNullMod(D, X, family = "binomial", verbose=FALSE)
 	expect_message(test.score <- testGenoSingleVar(nullmod, G = geno, test = "Wald"), "Cannot use Wald test")
 
 	expect_equal(colnames(test.score)[1], "Score")
@@ -75,7 +75,7 @@ test_that("GxE", {
 	### create a matrix of genetic variants to test.
 	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
 
-	nullmod <- fitNullModel(y, X, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, verbose=FALSE)
 	test.gxe <- testGenoSingleVar(nullmod, G = geno, E = X[,3,drop=FALSE], test = "Wald", GxE.return.cov = TRUE)
         expect_true(all(c("Est.G:c", "SE.G:c") %in% names(test.gxe$res)))
         expect_equal(length(test.gxe$GxEcovMatList), ncol(geno))

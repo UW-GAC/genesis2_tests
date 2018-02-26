@@ -10,7 +10,7 @@ expit <- function(x){exp(x)/(1+exp(x))}
 p <- expit(X %*% c(-1, 0.5, 1))
 D <- rbinom(n, size = 1, prob = p)
 
-nullmod <- fitNullModel(D, X, family = "binomial", verbose=FALSE)
+nullmod <- fitNullMod(D, X, family = "binomial", verbose=FALSE)
 
 # compare to logistic regression
 glm.mod <- glm(D ~ -1 + X, family = "binomial")

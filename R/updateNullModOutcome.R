@@ -58,7 +58,7 @@ updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c
     
     ### not re-fit the null model:
     
-    new.nullmod <- fitNullModel(y = resid, X = nullmod$model.matrix, covMatList = covMatList,
+    new.nullmod <- fitNullMod(y = resid, X = nullmod$model.matrix, covMatList = covMatList,
                                 group.idx = group.idx, family = "gaussian", start = nullmod$varComp, 
                                 AIREML.tol = AIREML.tol, maxIter = maxIter, dropZeros = TRUE, 
                                 verbose = verbose)

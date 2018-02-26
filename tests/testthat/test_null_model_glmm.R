@@ -53,7 +53,7 @@ while(varCompZero){
 	if (glmm.genesis$varComp[1] != 0 ) varCompZero <- FALSE
 }
 
-nullmod <- fitNullModel(y = D, X = X, covMatList = cor.mat, verbose=FALSE, family = "binomial")
+nullmod <- fitNullMod(y = D, X = X, covMatList = cor.mat, verbose=FALSE, family = "binomial")
 
 expect_equal(nullmod$family$family, "binomial")
 expect_true(nullmod$family$mixedmodel)

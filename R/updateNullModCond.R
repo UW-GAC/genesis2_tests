@@ -15,7 +15,7 @@ updateNullModCond <- function(nullmod, G, covMatList = NULL,  AIREML.tol = 1e-6,
     
     if (!nullmod$family$mixedmodel){ ## if it is not a mixed model, re-fit the model. (This includes heterogeneous residuals).
         
-        return(fitNullModel(nullmod$outcome, X, covMatList = NULL, 
+        return(fitNullMod(nullmod$outcome, X, covMatList = NULL, 
                             group.idx = nullmod$group.idx, family = nullmod$family$family))  	
     }
     
@@ -24,7 +24,7 @@ updateNullModCond <- function(nullmod, G, covMatList = NULL,  AIREML.tol = 1e-6,
     ### Re-fit the model with the new design matrix and start point the varComp
     ## from the provided nullmod object. 
     
-    return(fitNullModel(nullmod$outcome, X, covMatList = covMatList, 
+    return(fitNullMod(nullmod$outcome, X, covMatList = covMatList, 
                         group.idx = nullmod$group.idx, family = nullmod$family$family, start = nullmod$varComp,
                         AIREML.tol = AIREML.tol, maxIter= maxIter, dropZeros = dropZeros, verbose = verbose))     
     

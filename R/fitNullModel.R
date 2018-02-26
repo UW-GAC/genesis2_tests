@@ -17,8 +17,8 @@
 #' @param dropZeros Logical indicator of whether variance component terms that converge to 0 should be removed from the model
 #' @param verbose Logical indicator of whether updates from the function should be printed to the console
 #' @return The null model (TODO fill in details)
-fitNullModel <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaussian", start = NULL,
-                         AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
+fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaussian", start = NULL,
+                       AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
     
     if(!is.null(covMatList)){
         if (!is.list(covMatList)){

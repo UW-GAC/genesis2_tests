@@ -20,7 +20,7 @@ context("check variant set association tests")
         covMatList <- NULL
     }
     
-    fitNullModel(y, X, covMatList = covMatList, group.idx = group.idx, family=family, verbose=FALSE)
+    fitNullMod(y, X, covMatList = covMatList, group.idx = group.idx, family=family, verbose=FALSE)
 }
 
 

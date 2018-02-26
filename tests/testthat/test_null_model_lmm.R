@@ -39,7 +39,7 @@ scanData <- data.frame(scanID = paste0("p", 1:n), y = y, X1 = X[,1], X2 = X[,2],
 ## 	if (lmm.genesis$varComp[1] != 0 ) varCompJunk <- TRUE
 ## }
 
-nullmod <- fitNullModel(y, X, group.idx = group.idx, cor.mat, verbose=FALSE)
+nullmod <- fitNullMod(y, X, group.idx = group.idx, cor.mat, verbose=FALSE)
 
 
 expect_equal(nullmod$family$family, "gaussian")
@@ -58,7 +58,7 @@ expect_equivalent(nullmod$model.matrix, X)
 ### test updating a conditional model: 
 G = matrix(rnorm(100, 100,1))
 nullmod2 <- updateNullModCond(nullmod, G, covMatList = list(cor.mat), AIREML.tol = 1e-7, verbose=FALSE)
-nullmod3 <- fitNullModel(y, cbind(X, G), group.idx = group.idx, cor.mat, AIREML.tol = 1e-7, verbose=FALSE)
+nullmod3 <- fitNullMod(y, cbind(X, G), group.idx = group.idx, cor.mat, AIREML.tol = 1e-7, verbose=FALSE)
 
 expect_equivalent(nullmod2$varComp, nullmod3$varComp, tolerance=1e-5)
 expect_equivalent(nullmod3$fixef, nullmod2$fixef, tolerance=1e-5)
@@ -69,7 +69,7 @@ expect_equivalent(nullmod2$varCompCov, nullmod3$varCompCov, tolerance=1e-5)
 
 
 ## test without group
-nullmod <- fitNullModel(y, X, cor.mat, verbose=FALSE)
+nullmod <- fitNullMod(y, X, cor.mat, verbose=FALSE)
 
 lmm.genesis <- GENESIS::fitNullMM(scanData, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat, verbose=FALSE)
 

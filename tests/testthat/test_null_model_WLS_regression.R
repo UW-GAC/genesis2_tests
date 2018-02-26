@@ -29,7 +29,7 @@ X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
 y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
 
 group.idx <- list(G1 = c(1:(n/2)), G2 = c((n/2 + 1):n))
-nullmod <- fitNullModel(y, X, group.idx = group.idx, verbose=FALSE)
+nullmod <- fitNullMod(y, X, group.idx = group.idx, verbose=FALSE)
 
 
 ## compare to GENESIS. I need to create a jusk correlation matrix that will zero out as having variance component zero...

@@ -14,7 +14,7 @@ cor.mat <- crossprod(cor.mat)
 dimnames(cor.mat) <- list(scanID, scanID)
 covMatList <- list(A = cor.mat)
 
-nullmod <- fitNullModel(y, X, group.idx = group.idx, covMatList, verbose=FALSE)
+nullmod <- fitNullMod(y, X, group.idx = group.idx, covMatList, verbose=FALSE)
 
 group.ind <- 1
 expect_equal(.averageGroupVar(nullmod$varComp, covMatList = covMatList, group.idx = group.idx[group.ind]),
@@ -31,7 +31,7 @@ throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = gr
 throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = NULL))
 throws_error(.averageGroupVar(nullmod$varComp, covMatList = NULL, group.idx = group.idx[[1]]))
 
-nullmod2 <- updateNullModOutcome(nullmod, covMatList = covMatList, rankNorm.option = c("by.group"), rescale = c("None"), verbose=FALSE)
+nullmod2 <- updateNullModOutcome(nullmod, covMatList = covMatList, rankNorm.option = c("by.group"), rescale = c("none"), verbose=FALSE)
 
 
 expect_true(abs(.averageGroupVar(nullmod2$varComp, covMatList = covMatList, group.idx = group.idx[1]) - 1) < 0.1 )

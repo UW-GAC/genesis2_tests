@@ -7,7 +7,7 @@ n <- 100
 X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
 y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = 2)
 
-nullmod <- fitNullModel(y, X, verbose=FALSE)
+nullmod <- fitNullMod(y, X, verbose=FALSE)
 
 # compare to linear regression
 lm.mod <- lm(y ~ -1 + X)
