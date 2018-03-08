@@ -98,7 +98,6 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
 }
 
 
-### FIXME to take nullmod object and iterate calcXtilde over cols in G
 .testGenoSingleVarWaldGxE <- function(nullmod, G, E, GxE.return.cov.mat = FALSE){
 
     E <- as.matrix(E)
@@ -132,7 +131,7 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
         
         XtY <- crossprod(Xtilde, nullmod$Ytilde)
         betas <- crossprod(XtXinv, XtY)
-        res[g, grep("Est", colnames(res))] <- betas
+        res[g, grep("Est", colnames(res))] <- as.vector(betas)
         
         RSS <- as.numeric((sY2 - crossprod(XtY, betas))/(n - k - v))
         Vbetas <- XtXinv * RSS
@@ -143,19 +142,19 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), G
         
         res[g, grep("SE", colnames(res))] <- sqrt(diag(Vbetas))
         
-        res[g, "GxE.Stat"] <- tryCatch(crossprod(betas[-1],
+        res[g, "GxE.Stat"] <- tryCatch(sqrt(as.vector(crossprod(betas[-1],
                                                  crossprod(chol2inv(chol(Vbetas[-1, -1])),
-                                                           betas[-1])), 
+                                                           betas[-1])))), 
                                        error = function(e) { NA })
         
-        res[g, "Joint.Stat"] <- tryCatch(crossprod(betas,
-                                                   crossprod(XtX, betas))/RSS, 
+        res[g, "Joint.Stat"] <- tryCatch(sqrt(as.vector(crossprod(betas,
+                                                   crossprod(XtX, betas))/RSS)), 
                                          error = function(e) { NA })
     }
     
     res <- as.data.frame(res)
-    res$GxE.pval <- pchisq(res$GxE.Stat, df = (v - 1), lower.tail = FALSE)
-    res$Joint.pval <- pchisq(res$Joint.Stat, df = v, lower.tail = FALSE)
+    res$GxE.pval <- pchisq((res$GxE.Stat)^2, df = (v - 1), lower.tail = FALSE)
+    res$Joint.pval <- pchisq((res$Joint.Stat)^2, df = v, lower.tail = FALSE)
     
     if (GxE.return.cov.mat) {
         return(list(res = res, GxEcovMatList = res.Vbetas))

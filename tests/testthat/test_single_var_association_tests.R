@@ -72,10 +72,12 @@ test_that("GxE", {
 	X <- cbind(a=1, b=rnorm(n), c=rbinom(n, size = 1, prob = 0.5))
 	y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
 	
+	cor.mat <- crossprod(matrix(rnorm(n*n, sd = 0.05),n,n))
+        
 	### create a matrix of genetic variants to test.
 	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
 
-	nullmod <- fitNullMod(y, X, verbose=FALSE)
+	nullmod <- fitNullMod(y, X, covMatList=cor.mat, verbose=FALSE)
 	test.gxe <- testGenoSingleVar(nullmod, G = geno, E = X[,3,drop=FALSE], test = "Wald", GxE.return.cov = TRUE)
         expect_true(all(c("Est.G:c", "SE.G:c") %in% names(test.gxe$res)))
         expect_equal(length(test.gxe$GxEcovMatList), ncol(geno))
