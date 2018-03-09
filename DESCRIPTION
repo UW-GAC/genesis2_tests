@@ -1,9 +1,9 @@
 Package: genesis2tests
-Version: 0.99.0
+Version: 0.99.1
 Type: Package
 Title: genesis assocation testing code rewrite
 Description: null model and association testing.
-Author: Matthew P. Conomos, Stephanie M. Gogarten, Tamar Sofer, Ken Rice, Chaoyu Yu
+Author: Matthew P. Conomos, Stephanie M. Gogarten, Tamar Sofer, Ken Rice, Chaoyu Yu, Han Chen
 Maintainer: Stephanie M. Gogarten <sdmorris@uw.edu>
 Depends: 
 Imports: stats, Matrix

@@ -55,3 +55,36 @@ test_that("SKAT with rho=1 matches burden", {
         burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
         expect_true(abs(skat$pval_1 - burden$Score.pval) < 0.01)
 })
+
+
+test_that("hybrid test matches burden and skat", {
+	n <- 100
+
+	### create a matrix of genetic variants to test.
+	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
+        weights <- rep(1, ncol(geno))
+
+        ## mixed model
+	nullmod <- .testNullmod(n, MM=TRUE)
+        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
+        expect_equal(hybrid$pval_burden, burden$Score.pval)
+        
+        ## basic
+	nullmod <- .testNullmod(n, MM=FALSE)
+        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
+        expect_equal(hybrid$pval_burden, burden$Score.pval)
+        
+        ## mixed model - binary
+	nullmod <- .testNullmod(n, MM=TRUE, binary=TRUE)
+        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
+        expect_equal(hybrid$pval_burden, burden$Score.pval)
+        
+        ## basic - binary
+	nullmod <- .testNullmod(n, MM=FALSE, binary=TRUE)
+        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
+        expect_equal(hybrid$pval_burden, burden$Score.pval)
+})
