@@ -7,7 +7,7 @@
 
 
 # E an environmental variable for optional GxE interaction analysis. 
-testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Wald", "Score"), GxE.return.cov = FALSE){
+testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Score", "Wald"), GxE.return.cov = FALSE){
     test <- match.arg(test)
     
     if (test == "Wald" & nullmod$family$family != "gaussian"){
