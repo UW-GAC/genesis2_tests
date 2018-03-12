@@ -5,7 +5,7 @@
 ## Variant set: SKAT, burden, SKAT-O. Multiple types of p-values. Default: Davies with Kuonen if does not converge. 
 
 
-testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT", "Hybrid"), 
+testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT", "SMMAT"), 
                            burden.test = c("Score", "Wald"),  rho = 0,
                            pval.method = c("davies", "kuonen", "liu"), 
                            return.scores = FALSE, return.scores.cov = FALSE){
@@ -21,8 +21,8 @@ testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT", "Hybr
     if (test == "Burden") {
         out <- .testVariantSetBurden(nullmod, G, weights, burden.test)
     }
-    if (test == "Hybrid") {
-        out <- .testVariantSetHybrid(nullmod, G, weights, pval.method)
+    if (test == "SMMAT") {
+        out <- .testVariantSetSMMAT(nullmod, G, weights, pval.method)
     }
     return(out)
 }
@@ -69,7 +69,7 @@ testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT", "Hybr
 
 
 
-.testVariantSetHybrid <- function(nullmod, G, weights, pval.method) {
+.testVariantSetSMMAT <- function(nullmod, G, weights, pval.method) {
     G <- t(t(G) * weights)
     U <- as.vector(crossprod(G, nullmod$resid))
     G <- calcXtilde(nullmod, G)

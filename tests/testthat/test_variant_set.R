@@ -66,25 +66,25 @@ test_that("hybrid test matches burden and skat", {
 
         ## mixed model
 	nullmod <- .testNullmod(n, MM=TRUE)
-        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        hybrid <- .testVariantSetSMMAT(nullmod, geno, weights, pval.method="davies")
         burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
         expect_equal(hybrid$pval_burden, burden$Score.pval)
         
         ## basic
 	nullmod <- .testNullmod(n, MM=FALSE)
-        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        hybrid <- .testVariantSetSMMAT(nullmod, geno, weights, pval.method="davies")
         burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
         expect_equal(hybrid$pval_burden, burden$Score.pval)
         
         ## mixed model - binary
 	nullmod <- .testNullmod(n, MM=TRUE, binary=TRUE)
-        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        hybrid <- .testVariantSetSMMAT(nullmod, geno, weights, pval.method="davies")
         burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
         expect_equal(hybrid$pval_burden, burden$Score.pval)
         
         ## basic - binary
 	nullmod <- .testNullmod(n, MM=FALSE, binary=TRUE)
-        hybrid <- .testVariantSetHybrid(nullmod, geno, weights, pval.method="davies")
+        hybrid <- .testVariantSetSMMAT(nullmod, geno, weights, pval.method="davies")
         burden <- .testVariantSetBurden(nullmod, geno, weights, burden.test="Score")
         expect_equal(hybrid$pval_burden, burden$Score.pval)
 })
