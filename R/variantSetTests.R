@@ -89,7 +89,10 @@ testVariantSet <- function(nullmod, G, weights, test = c("Burden", "SKAT", "SMMA
     pval <- pv["pval"]
     err <- pv["err"]
     out.pval <- tryCatch(pchisq(-2*log(burden.pval)-2*log(pval), df=4, lower.tail = FALSE), error = function(e) { NA })
-    if(is.na(out.pval)) err <- 1
+    if(is.na(out.pval)) {
+        err <- 1
+        out.pval <- burden.pval
+    }
     out <- list(pval_burden=burden.pval, pval_hybrid=out.pval, err=err)
     return(out)
 }
