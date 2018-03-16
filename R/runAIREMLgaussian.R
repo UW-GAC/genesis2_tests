@@ -1,4 +1,4 @@
-.runAIREMLgaussian <- function(Y, X, start, covMatList, group.idx, AIREML.tol, dropZeros, maxIter, verbose){
+.runAIREMLgaussian <- function(Y, X, start, covMatList, group.idx, AIREML.tol, drop.zeros, max.iter, verbose){
 
     # initial values
     m <- length(covMatList)
@@ -36,7 +36,7 @@
         }
         
         ## check if exceeded the number of iterations
-        if (reps > maxIter) {
+        if (reps > max.iter) {
             converged <- FALSE
             warning("Maximum number of iterations reached without convergence!")
             (break)()
@@ -70,7 +70,7 @@
             AI[1:m, (m + 1):(m + g)] <- AI.off
             AI[(m + 1):(m + g),1:m ] <- t(AI.off)
             
-            if(dropZeros){
+            if(drop.zeros){
                 # remove Zero terms
                 AI <- AI[!zeroFLAG,!zeroFLAG]
                 score <- score[!zeroFLAG]
@@ -79,7 +79,7 @@
             # update
             AIinvScore <- solve(AI, score)
             
-            if(dropZeros){
+            if(drop.zeros){
                 sigma2.kplus1[!zeroFLAG] <- sigma2.k[!zeroFLAG] + AIinvScore
                 sigma2.kplus1[zeroFLAG] <- 0
             }else{
@@ -91,7 +91,7 @@
             tau <- 1
             while(!all(sigma2.kplus1 >= 0)){
                 tau <- 0.5*tau
-                if(dropZeros){
+                if(drop.zeros){
                     sigma2.kplus1[!zeroFLAG] <- sigma2.k[!zeroFLAG] + tau*AIinvScore
                     sigma2.kplus1[zeroFLAG] <- 0
                 }else{

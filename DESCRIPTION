@@ -1,5 +1,5 @@
 Package: genesis2tests
-Version: 0.99.2
+Version: 0.99.3
 Type: Package
 Title: genesis assocation testing code rewrite
 Description: null model and association testing.
@@ -11,4 +11,3 @@ Suggests: CompQuadForm, survey, poibin, bigQF, roxygen2, testthat, GENESIS
 License: GPL-3
 biocViews: SNP, GeneticVariability, Genetics, StatisticalMethod
 NeedsCompilation: no
-RoxygenNote: 6.0.1

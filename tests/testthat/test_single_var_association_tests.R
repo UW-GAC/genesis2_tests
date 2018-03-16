@@ -96,4 +96,6 @@ test_that("GxE", {
         expect_equal(res.lm$SE.G, test.gxe$res$SE.G, tolerance = 1e-8)
         expect_equal(res.lm$`Est.G:c`, test.gxe$res$`Est.G:c`, tolerance = 1e-8)
         expect_equal(res.lm$`SE.G:c`, test.gxe$res$`SE.G:c`, tolerance = 1e-8)
+
+	expect_message(test.gxe <- testGenoSingleVar(nullmod, G = geno, E = X[,3,drop=FALSE], test = "Score"))
 })

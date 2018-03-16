@@ -4,21 +4,10 @@
 ## X is assumed to have an intercept. 
 ## non-gaussian families can only be binomial and poisson. 
 
-#' Fit null model
-#'
-#' @param y outcome vector
-#' @param X data.frame or model.matrix
-#' @param covMatList A list of matrices specifying the covariance structures of the random effects terms
-#' @param group.idx list of indices for each group level
-#' @param family A description of the error distribution to be used in the model. The default "gaussian" fits a linear mixed model; see \code{\link{family}} for further options.
-#' @param start A vector of starting values for the variance component estimation procedure. The function will pick reasonable starting values when left NULL (default). See 'Details' for more information.
-#' @param AIREML.tol The convergence threshold for the Average Information REML (AIREML) procedure used to estimate the variance components of the random effects.
-#' @param maxIter The maximum number of iterations allowed in the AIREML procedure
-#' @param dropZeros Logical indicator of whether variance component terms that converge to 0 should be removed from the model
-#' @param verbose Logical indicator of whether updates from the function should be printed to the console
-#' @return The null model (TODO fill in details)
+## y - outcome vector
+## X - data.frame or model.matrix
 fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaussian", start = NULL,
-                       AIREML.tol = 1e-6, maxIter = 100, dropZeros = TRUE, verbose = TRUE){
+                       AIREML.tol = 1e-6, max.iter = 100, drop.zeros = TRUE, verbose = TRUE){
     
     if(!is.null(covMatList)){
         if (!is.list(covMatList)){
@@ -52,17 +41,17 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         }
         if (is.null(covMatList) & !is.null(group.idx)){
             vc.mod <- .runWLSgaussian(y, X, group.idx = group.idx, start = start, 
-                                      AIREML.tol = AIREML.tol,   maxIter = maxIter,  verbose = verbose)
+                                      AIREML.tol = AIREML.tol,   max.iter = max.iter,  verbose = verbose)
             out <- .nullModOutWLS(y, X, vc.mod = vc.mod, family =  family, group.idx = group.idx)
         }
         if (!is.null(covMatList)){
             if (is.null(group.idx)) group.idx <- list(resid.var = 1:length(y))
             vc.mod <- .runAIREMLgaussian(y, X, start = start, covMatList = covMatList, 
-            			group.idx = group.idx, AIREML.tol = AIREML.tol, dropZeros = dropZeros,  
-            			maxIter = maxIter,  verbose = verbose)
+            			group.idx = group.idx, AIREML.tol = AIREML.tol, drop.zeros = drop.zeros,  
+            			max.iter = max.iter,  verbose = verbose)
             out <- .nullModOutMM(y = y, workingY = y,  X = X, vc.mod = vc.mod, 
                                  family = family, covMatList = covMatList, 
-                                 group.idx = group.idx, dropZeros = dropZeros)
+                                 group.idx = group.idx, drop.zeros = drop.zeros)
         }
     } 
     if (family$family != "gaussian"){ # separate condition instead of "else" for readability. 
@@ -73,7 +62,7 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
             
             iterate.out <- .iterateAIREMLworkingY(glm.mod = mod, X = X, family = family, 
             				start = start, covMatList = covMatList, AIREML.tol = AIREML.tol,
-							dropZeros = dropZeros, maxIter = maxIter, verbose = verbose)
+							drop.zeros = drop.zeros, max.iter = max.iter, verbose = verbose)
            
            vc.mod <- iterate.out$vc.mod
            working.y <- iterate.out$working.y
@@ -84,7 +73,7 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
             } else{
                 out <- .nullModOutMM(y = y, workingY = working.y$Y, X = X, 
                 vc.mod = vc.mod, family = family, covMatList = covMatList, 
-                vmu=working.y$vmu, gmuinv=working.y$gmuinv, dropZeros = dropZeros)
+                vmu=working.y$vmu, gmuinv=working.y$gmuinv, drop.zeros = drop.zeros)
             }	
         } else{
             out <- .nullModOutReg(y, X, mod, family)

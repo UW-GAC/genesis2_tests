@@ -121,7 +121,7 @@
 
 
 
-.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, dropZeros = TRUE){
+.nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, drop.zeros = TRUE){
     n <- nrow(X)
     k <- ncol(X)
     m <- length(covMatList)
@@ -163,7 +163,7 @@
     rownames(varCompCov) <- paste("V_",c(names(covMatList),group.names),sep="")
 
     
-    if(dropZeros){
+    if(drop.zeros){
         varCompCov[!vc.mod$zeroFLAG, !vc.mod$zeroFLAG] <- solve(vc.mod$AI)
     }else{
         varCompCov <- solve(vc.mod$AI)

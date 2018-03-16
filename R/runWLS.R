@@ -3,7 +3,7 @@
 # n - number of people 
 # g - the number of groups (1 to more). if g == 1 group.idx is ignored. 
 .runWLSgaussian <- function (Y, X, group.idx, start, AIREML.tol,
-                             maxIter,  verbose){
+                             max.iter,  verbose){
     n <- length(Y)
     g <- length(group.idx)
     if (g <= 1) stop("group.idx must have length > 1")
@@ -22,7 +22,7 @@
     repeat ({
         reps <- reps + 1
         
-        if (reps > maxIter) {
+        if (reps > max.iter) {
             converged <- FALSE
             warning("Maximum number of iterations reached without convergence!")
             (break)()

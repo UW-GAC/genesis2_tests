@@ -3,7 +3,7 @@
 
 ## the names of items in the list group.idx have to match the names of the corresponding variance components!
 
-updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("none", "model", "residSD"), AIREML.tol = 1e-6, maxIter = 100, verbose = TRUE){
+updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c("by.group", "all"), rescale = c("none", "model", "residSD"), AIREML.tol = 1e-6, max.iter = 100, verbose = TRUE){
 
     rankNorm.option <- match.arg(rankNorm.option)
     rescale <- match.arg(rescale)
@@ -60,7 +60,7 @@ updateNullModOutcome <- function(nullmod, covMatList = NULL, rankNorm.option = c
     
     new.nullmod <- fitNullMod(y = resid, X = nullmod$model.matrix, covMatList = covMatList,
                                 group.idx = group.idx, family = "gaussian", start = nullmod$varComp, 
-                                AIREML.tol = AIREML.tol, maxIter = maxIter, dropZeros = TRUE, 
+                                AIREML.tol = AIREML.tol, max.iter = max.iter, drop.zeros = TRUE, 
                                 verbose = verbose)
     
     

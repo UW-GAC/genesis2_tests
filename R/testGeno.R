@@ -21,6 +21,11 @@ testGenoSingleVar <- function(nullmod, G, E = NULL, test = c("Score", "Wald"), G
                                       n=length(nullmod$Ytilde), k=ncol(nullmod$model.matrix))
     }
     
+    if (test == "Score" & !is.null(E)){
+    	test <- "Wald"
+    	message("Cannot use Score test for GxE, using the Wald test instead.")
+    }
+        
     if (test == "Wald" & !is.null(E)){
         res <- .testGenoSingleVarWaldGxE(nullmod, G, E, GxE.return.cov.mat=GxE.return.cov)
     }

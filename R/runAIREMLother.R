@@ -1,5 +1,5 @@
 
-.runAIREMLother <- function(Y, X, start, covMatList, AIREML.tol, dropZeros, maxIter, verbose, vmu, gmuinv){
+.runAIREMLother <- function(Y, X, start, covMatList, AIREML.tol, drop.zeros, max.iter, verbose, vmu, gmuinv){
     
     m <- length(covMatList)
     n <- length(Y)
@@ -37,7 +37,7 @@
             AI <- covMats.score.AI$AI
             score <- covMats.score.AI$score
             
-            if(dropZeros){  ## here need to exit if all terms were zero!!
+            if(drop.zeros){  ## here need to exit if all terms were zero!!
                 # remove Zero terms
                 AI <- AI[!zeroFLAG,!zeroFLAG]
                 score <- score[!zeroFLAG]
@@ -46,7 +46,7 @@
             # update
             AIinvScore <- solve(AI, score)
             
-            if(dropZeros){
+            if(drop.zeros){
                 sigma2.kplus1[!zeroFLAG] <- sigma2.k[!zeroFLAG] + AIinvScore
                 sigma2.kplus1[zeroFLAG] <- 0
             }else{
@@ -58,7 +58,7 @@
             tau <- 1
             while(!all(sigma2.kplus1 >= 0)){
                 tau <- 0.5*tau
-                if(dropZeros){
+                if(drop.zeros){
                     sigma2.kplus1[!zeroFLAG] <- sigma2.k[!zeroFLAG] + tau*AIinvScore
                     sigma2.kplus1[zeroFLAG] <- 0
                 }else{
@@ -74,7 +74,7 @@
                 converged <- TRUE
                 break()
             }
-            if(reps == maxIter){
+            if(reps == max.iter){
                 converged <- FALSE
                 warning("Maximum number of iterations reached without convergence!")
                 break()
