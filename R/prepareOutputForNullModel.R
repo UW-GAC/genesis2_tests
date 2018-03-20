@@ -24,21 +24,17 @@
     logLik <- as.numeric(logLik(mod))
     AIC <- AIC(mod)
     workingY <- drop(y)
-    outcome <- drop(y)
-    model.matrix <- X
     cholSigmaInv <- sqrt(1/varComp)
     converged <- ifelse(family$family == "gaussian", TRUE, mod$converged)
     zeroFLAG <- NULL
     RSS <- ifelse(family$family == "gaussian", sum(resid.marginal^2)/varComp/(nrow(X) - ncol(X)), 1)
     
-    sample.id <- rownames(model.matrix)
-    
-    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp,
+    out <- list(family = family, hetResid = hetResid, varComp = varComp,
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal = resid.marginal, 
-                logLik = logLik, AIC = AIC, workingY = workingY, outcome = outcome, 
-                model.matrix = model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG,  RSS = RSS )
+                logLik = logLik, AIC = AIC, workingY = workingY, outcome = y, 
+                model.matrix = X, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
+                converged = converged, zeroFLAG = zeroFLAG, RSS = RSS)
     class(out) <- "GENESIS.nullModel"
     return(out)
 
@@ -88,29 +84,21 @@
     logLikR <- vc.mod$logLikR
     AIC <- 2 * (ncol(X) + length(varComp)) - 2 * logLik
     
-    eta <- vc.mod$eta
-    
     workingY <- drop(y)
-    outcome <- drop(y)
     
-    resid.conditional <- drop(workingY - eta) ### should be the same as resid.marginal
-    
-    model.matrix <- X 
+    resid.conditional <- workingY - drop(vc.mod$eta) ### should be the same as resid.marginal
     
     converged <- TRUE
     zeroFLAG <- NULL
 
-    sample.id <- rownames(model.matrix)
-    
-    out <- list(sample.id = sample.id,
-                family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
+    out <- list(family = family, hetResid = hetResid, varComp = varComp, varCompCov = varCompCov, 
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
-                outcome = outcome, model.matrix = model.matrix, group.idx = group.idx,
+                outcome = y, model.matrix = X, group.idx = group.idx,
 ###                cholSigmaInv = cholSigmaInv.diag, 
                 cholSigmaInv = cholSigmaInv, 
-                converged = converged,  zeroFLAG =zeroFLAG, RSS = RSS )
+                converged = converged, zeroFLAG = zeroFLAG, RSS = RSS)
     class(out) <- "GENESIS.nullModel"
     return(out)
 }
@@ -123,7 +111,6 @@
 
 .nullModOutMM <- function(y, workingY, X, vc.mod, family, covMatList, group.idx = NULL, vmu = NULL, gmuinv = NULL, drop.zeros = TRUE){
     n <- nrow(X)
-    k <- ncol(X)
     m <- length(covMatList)
     
     if (!is.null(group.idx)){
@@ -169,25 +156,8 @@
         varCompCov <- solve(vc.mod$AI)
     }
     
-    
-
-    # Constructing the covariance Matrix
-    ## Sigma <- Reduce("+", mapply("*", covMatList, varComp[1:m], SIMPLIFY=FALSE))
-    ## if(g > 0){
-    ##     diagV <- rep(0,n)
-    ##     for(i in 1:g){
-    ##         diagV[group.idx[[i]]] <- varComp[m+i]
-    ##     }
-    ##     diag(Sigma) <- diag(Sigma) + diagV
-    ## }
-    ## if (family$family != "gaussian"){
-    ##     Sigma <- Sigma + diag(as.vector(vmu)/as.vector(gmuinv)^2)
-    ## }
-
-    ## SigmaInv <- chol2inv(chol(Sigma))
     sq <- .computeSigmaQuantities(varComp = varComp, covMatList = covMatList, group.idx = group.idx, vmu = vmu, gmuinv = gmuinv)
     # Cholesky Decomposition
-    ## cholSigmaInv <- t(chol(SigmaInv))
     cholSigmaInv <- t(chol(sq$Sigma.inv))
     dimnames(cholSigmaInv) <- list(colnames(covMatList[[1]]), colnames(covMatList[[1]]))
     
@@ -212,27 +182,20 @@
     logLikR <- vc.mod$logLikR
     AIC <- 2 * (ncol(X) + length(varComp)) - 2 * logLik
     
-    eta <- vc.mod$eta
-    
     workingY <- drop(workingY)
-    outcome <- drop(y)
     
-    resid.conditional <-  drop(workingY - vc.mod$eta) ### 
-    
-    model.matrix <- X 
+    resid.conditional <- workingY - drop(vc.mod$eta)
     
     converged <- vc.mod$converged
     zeroFLAG <- vc.mod$zeroFLAG
 
-    sample.id <- rownames(model.matrix)
-    
-    out <- list(sample.id = sample.id, family = family, hetResid = hetResid, varComp = varComp, 
+    out <- list(family = family, hetResid = hetResid, varComp = varComp, 
                 varCompCov = varCompCov, fixef = fixef, betaCov = betaCov, 
                 fitted.values = fitted.values, resid.marginal =resid.marginal, 
-                resid.conditional =resid.conditional, logLik = logLik, 
-                logLikR = logLikR, AIC = AIC, workingY = workingY, outcome = outcome,
-                model.matrix =  model.matrix, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
-                converged = converged, zeroFLAG = zeroFLAG, RSS =RSS )
+                resid.conditional = resid.conditional, logLik = logLik, 
+                logLikR = logLikR, AIC = AIC, workingY = workingY, outcome = y,
+                model.matrix = X, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
+                converged = converged, zeroFLAG = zeroFLAG, RSS = RSS)
     class(out) <- "GENESIS.nullMixedModel"
     return(out)
 }

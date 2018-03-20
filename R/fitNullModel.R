@@ -78,13 +78,10 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         } else{
             out <- .nullModOutReg(y, X, mod, family)
         }
-        
     }
 
     nullprep <- nullModelTestPrep(out)
     out <- c(out, nullprep)
-    
-    out$call <- match.call()
     
     return(out)
     
