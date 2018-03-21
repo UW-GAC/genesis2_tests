@@ -1,5 +1,5 @@
 Package: genesis2tests
-Version: 0.99.4
+Version: 0.99.5
 Type: Package
 Title: genesis assocation testing code rewrite
 Description: null model and association testing.
