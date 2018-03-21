@@ -1,4 +1,3 @@
-
 .runAIREMLother <- function(Y, X, start, covMatList, AIREML.tol, drop.zeros, max.iter, verbose, vmu, gmuinv){
     
     m <- length(covMatList)
@@ -30,8 +29,8 @@
 
         if(reps > 1){
             # Average Information and Scores
-### more arguments
-            covMats.score.AI <- .calcAIcovMats(Y, #lq$P,
+            ### more arguments
+            covMats.score.AI <- .calcAIcovMats(Y,
                                                lq$PY, covMatList,
                                                Sigma.inv = sq$Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
             AI <- covMats.score.AI$AI
@@ -84,17 +83,15 @@
             # EM step
             sigma2.kplus1 <- rep(NA,m)
             for(i in 1:m){
-###                PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
-###                sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
+                ### PAPY <- crossprod(lq$P,crossprod(covMatList[[i]],lq$PY))
+                ### sigma2.kplus1[i] <- (1/n)*((sigma2.k[i])^2*crossprod(Y,lq$PAPY) + (n*sigma2.k[i] - (sigma2.k[i])^2*sum(lq$P*covMatList[[i]])))
                 PAPY <- sq$Sigma.inv %*% crossprod(covMatList[[i]],lq$PY) - tcrossprod(tcrossprod(lq$Sigma.inv_X, lq$Xt_Sigma.inv_X.inv), t(crossprod(covMatList[[i]],lq$PY)) %*% lq$Sigma.inv_X)	  
                 trPA.part1 <- sum( sq$Sigma.inv * covMatList[[i]] )
-                trPA.part2 <- sum(diag( 
-                    (crossprod( lq$Sigma.inv_X, covMatList[[i]]) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv
-                ))
+                trPA.part2 <- sum(diag( (crossprod( lq$Sigma.inv_X, covMatList[[i]]) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv ))
                 trPA <-  trPA.part1 - trPA.part2
-              
+                
                 sigma2.kplus1[i] <- as.numeric((1/n)*(sigma2.k[i]^2*crossprod(Y,PAPY) + n*sigma2.k[i] - sigma2.k[i]^2*trPA ))
-              
+                
             }
             sigma2.k <- sigma2.kplus1
         }
@@ -106,7 +103,7 @@
     VinvR <- crossprod(sq$Sigma.inv, lq$residM)
     eta <- as.numeric(lq$fits + crossprod(sq$Vre, VinvR)) # X\beta + Zb
     
-    return(list(allZero = FALSE, varComp = sigma2.k, AI = AI, converged = converged, zeroFLAG = zeroFLAG, beta = lq$beta,  residM = lq$residM,  eta = eta, logLikR=lq$logLikR, logLik=lq$logLik, RSS=lq$RSS, fits = lq$fits))
+    return(list(allZero = FALSE, varComp = sigma2.k, AI = AI, converged = converged, zeroFLAG = zeroFLAG, beta = lq$beta, residM = lq$residM, eta = eta, logLikR = lq$logLikR, logLik = lq$logLik, RSS = lq$RSS, fits = lq$fits))
 
 }
 

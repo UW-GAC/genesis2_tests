@@ -19,7 +19,6 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         colnames(X) <- paste0("X", 1:ncol(X))
     }
     
-    ## may be transferred to the wrapper function. 
     if(is.character(family)){
         family <- get(family)
     }
@@ -29,7 +28,6 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
     if(is.null(family$family)){
         stop("'family' not recognized")
     }
-
     if (!is.element(family$family, c("gaussian", "binomial", "poisson"))){
         stop("family must be one of gaussian, binomial, or poisson")
     }
@@ -41,39 +39,38 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         }
         if (is.null(covMatList) & !is.null(group.idx)){
             vc.mod <- .runWLSgaussian(y, X, group.idx = group.idx, start = start, 
-                                      AIREML.tol = AIREML.tol,   max.iter = max.iter,  verbose = verbose)
-            out <- .nullModOutWLS(y, X, vc.mod = vc.mod, family =  family, group.idx = group.idx)
+                                      AIREML.tol = AIREML.tol, max.iter = max.iter, verbose = verbose)
+            out <- .nullModOutWLS(y, X, vc.mod = vc.mod, family = family, group.idx = group.idx)
         }
         if (!is.null(covMatList)){
             if (is.null(group.idx)) group.idx <- list(resid.var = 1:length(y))
             vc.mod <- .runAIREMLgaussian(y, X, start = start, covMatList = covMatList, 
-            			group.idx = group.idx, AIREML.tol = AIREML.tol, drop.zeros = drop.zeros,  
-            			max.iter = max.iter,  verbose = verbose)
-            out <- .nullModOutMM(y = y, workingY = y,  X = X, vc.mod = vc.mod, 
+                                         group.idx = group.idx, AIREML.tol = AIREML.tol, drop.zeros = drop.zeros,  
+                                         max.iter = max.iter, verbose = verbose)
+            out <- .nullModOutMM(y = y, workingY = y, X = X, vc.mod = vc.mod, 
                                  family = family, covMatList = covMatList, 
                                  group.idx = group.idx, drop.zeros = drop.zeros)
         }
     } 
     if (family$family != "gaussian"){ # separate condition instead of "else" for readability. 
         mod <- glm(y ~ X, family = family)
-	
         
         if (!is.null(covMatList)){ ## iterate between computing workingY and estimating VCs. 
             
             iterate.out <- .iterateAIREMLworkingY(glm.mod = mod, X = X, family = family, 
-            				start = start, covMatList = covMatList, AIREML.tol = AIREML.tol,
-							drop.zeros = drop.zeros, max.iter = max.iter, verbose = verbose)
-           
-           vc.mod <- iterate.out$vc.mod
-           working.y <- iterate.out$working.y
-      	   
+                                                  start = start, covMatList = covMatList, AIREML.tol = AIREML.tol,
+                                                  drop.zeros = drop.zeros, max.iter = max.iter, verbose = verbose)
+            
+            vc.mod <- iterate.out$vc.mod
+            working.y <- iterate.out$working.y
+            
       	    ## check whether all variance components were estimated as zero:
             if (vc.mod$allZero == TRUE){
                 out <- .nullModOutReg(y, X, mod, family)
             } else{
                 out <- .nullModOutMM(y = y, workingY = working.y$Y, X = X, 
-                vc.mod = vc.mod, family = family, covMatList = covMatList, 
-                vmu=working.y$vmu, gmuinv=working.y$gmuinv, drop.zeros = drop.zeros)
+                                     vc.mod = vc.mod, family = family, covMatList = covMatList, 
+                                     vmu = working.y$vmu, gmuinv = working.y$gmuinv, drop.zeros = drop.zeros)
             }	
         } else{
             out <- .nullModOutReg(y, X, mod, family)
