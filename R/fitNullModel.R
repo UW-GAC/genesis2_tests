@@ -13,6 +13,8 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         if (!is.list(covMatList)){
             covMatList <- list(A = covMatList)
         }
+        # coerce to Matrix objects
+        covMatList <- lapply(covMatList, Matrix)
     } 
 
     if (is.null(colnames(X))){
