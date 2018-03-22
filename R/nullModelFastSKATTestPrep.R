@@ -12,6 +12,7 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
     CholSigma <- t(chol(SIGMA)) 
     SIGMAinv <- tcrossprod(C)
     
+ 
     qr <- qr(as.matrix(solve(CholSigma,W)))
 
 
@@ -21,7 +22,7 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
 
 
 
-.testVariantSetFastSKAT <- function(nullprep, G, weights){
+.testVariantSetFastSKAT <- function(nullprep, G, weights, method=c("ssvd","lanczos","satterthwaite"), neig=100, tr2.sample.size=500, q=NULL,  convolution.method=c("saddlepoint","integration"), remainder.underflow=c("warn","missing","error")){
     
     sparseG <- Matrix(G, sparse = TRUE) %*% Diagonal(x = weights)
     
@@ -39,16 +40,12 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
     	sum(s^2)
     })
     
-    class(rval) <- c("famSKAT_lmekin", "famSKAT", "matrixfree") ## or famSKAT_genesis?
-    return(rval)
+    class(rval) <- c("famSKAT_genesis", "famSKAT", "matrixfree") ## or famSKAT_genesis?
     
-    pval <- bigQF::pQF(rval$Q(), rval, neig = ) ### what object should be the second entry of pQF??
-    
-    
-# ### or instead directly: ???
-    # stdres <- nullprep$SIGMAinv %*% nullprep$resids
-	# s = crossprod(sparseG, stdres)
-	# pval = pQF(sum(s^2), ...)  ## add arguments here??
+    pval <- bigQF::pQF(rval$Q(), rval,  method = method, neig = neig, tr2.sample.size = tr2.sample.size, q = q, convolution.method = convolution.method, remainder.underflow = remainder.underflow) ### what object should be the second entry of pQF??
+   	names(pval) <- "pval"
+   	
+	return(pval)
 }
 
 
