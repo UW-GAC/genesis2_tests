@@ -73,6 +73,7 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
       	    ## check whether all variance components were estimated as zero:
             if (vc.mod$allZero == TRUE){
                 out <- .nullModOutReg(y, X, mod, family)
+                out$zeroFLAG <- TRUE
             } else{
                 out <- .nullModOutMM(y = y, workingY = working.y$Y, X = X, 
                                      vc.mod = vc.mod, family = family, covMatList = covMatList, 
