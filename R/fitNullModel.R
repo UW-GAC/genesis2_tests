@@ -13,9 +13,13 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         if (!is.list(covMatList)){
             covMatList <- list(A = covMatList)
         }
-        # coerce to Matrix objects
-        covMatList <- lapply(covMatList, Matrix)
-    } 
+        # coerce to Matrix objects. should get "dspMatrix" (packed symmetric matrix)
+        covMatList <- lapply(covMatList, function(x) {
+            x <- Matrix(x)
+            if (is(x, "symmetricMatrix")) x <- pack(x)
+            return(x)
+        })
+    }
 
     if (is.null(colnames(X))){
         colnames(X) <- paste0("X", 1:ncol(X))
