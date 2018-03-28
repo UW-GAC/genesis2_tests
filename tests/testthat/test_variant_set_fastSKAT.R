@@ -93,9 +93,9 @@ test_that("SKAT with rho=1 matches burden", {
        
        ### now incorporate rho > 0:
       nullmod <- .prepNullmod(n, MM=TRUE)
-        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0.5, pval.method="davies")  
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0.3, pval.method="davies")  
         nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
-       skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights, rho = 0.5) 
+       skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights, rho = 0.3) 
 
 		 expect_true(abs(skat.1$pval_0 - skat.2) < 0.01)
 

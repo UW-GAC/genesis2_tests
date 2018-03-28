@@ -38,7 +38,7 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
 		sparseG <- Matrix(G, sparse = TRUE) %*% Diagonal(x = weights)  %*% cholRhoMat
 	}
     
-	if (is.null(dim(C)) & length(C) == 1){
+	if (is.null(dim(nullprep$CholSigma)) & length(nullprep$CholSigma) == 1){
 		  rval <- list(mult = function(X){
     		base::qr.resid(nullprep$qr, as.matrix((sparseG %*% X)/nullprep$CholSigma))	
 	    }, tmult = function(X){
