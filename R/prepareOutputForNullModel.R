@@ -8,8 +8,10 @@
     
     if (family$family == "gaussian"){
         varComp <- summary(mod)$sigma^2
+        cholSigmaInv <- sqrt(1/varComp)
     }  else{
         varComp <- family$variance(mod$fitted)
+        cholSigmaInv <- Diagonal(x=sqrt(1/varComp))
     }
     
     varCompCov <- NULL
@@ -23,8 +25,7 @@
     resid.marginal <-  residuals(mod, type = "response")
     logLik <- as.numeric(logLik(mod))
     AIC <- AIC(mod)
-    workingY <- drop(y)
-    cholSigmaInv <- sqrt(1/varComp)
+    workingY <- drop(y)   
     converged <- ifelse(family$family == "gaussian", TRUE, mod$converged)
     zeroFLAG <- NULL
     RSS <- ifelse(family$family == "gaussian", sum(resid.marginal^2)/varComp/(nrow(X) - ncol(X)), 1)
