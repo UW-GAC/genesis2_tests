@@ -1,6 +1,4 @@
 
-
-
 ### preparing output arguments for regression models that are not mixed. To match mixed models, 
 ## we call "sigma" varComp (because it can be viewed as a type of variance component)
 .nullModOutReg <- function(y, X, mod, family, group.idx = NULL){
@@ -38,13 +36,10 @@
                 converged = converged, zeroFLAG = zeroFLAG, RSS = RSS)
     class(out) <- "GENESIS.nullModel"
     return(out)
-
 }
 
 
 
-
-### updated later for using sparsity...
 .nullModOutWLS <- function(y, X, vc.mod, family, group.idx = NULL){
     family$mixedmodel <- FALSE
     
@@ -61,14 +56,10 @@
     
     hetResid <- TRUE
     varNames <- colnames(X) 
-###    cholSigmaInv.diag <- sqrt(vc.mod$Sigma.inv.diag)
-    
-    ### in future version, using Matrix package, we will have: 
     cholSigmaInv <- Diagonal(x=sqrt(diag(vc.mod$Sigma.inv)))
     
     RSS <- vc.mod$RSS
    
-###    betaCov <- RSS * chol2inv(chol(crossprod(X*cholSigmaInv.diag)))  
     betaCov <- as.matrix(RSS * chol2inv(chol(crossprod(crossprod(cholSigmaInv, X)))))
     dimnames(betaCov) <- list(varNames, varNames)
     
@@ -96,17 +87,11 @@
                 fixef = fixef, betaCov = betaCov, fitted.values = fitted.values, 
                 resid.marginal = resid.marginal, resid.conditional = resid.conditional, 
                 logLik = logLik, logLikR  = logLikR, AIC = AIC, workingY = workingY, 
-                outcome = y, model.matrix = X, group.idx = group.idx,
-###                cholSigmaInv = cholSigmaInv.diag, 
-                cholSigmaInv = cholSigmaInv, 
+                outcome = y, model.matrix = X, group.idx = group.idx, cholSigmaInv = cholSigmaInv, 
                 converged = converged, zeroFLAG = zeroFLAG, RSS = RSS)
     class(out) <- "GENESIS.nullModel"
     return(out)
 }
-
-
-
-
 
 
 
@@ -132,7 +117,6 @@
             group.names <- NULL
         }
     }
-
     
     if(is.null(names(covMatList))){
         names(covMatList) <- paste0("M",1:m)

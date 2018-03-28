@@ -24,12 +24,14 @@ updateNullModCond <- function(nullmod, G, covMatList = NULL,  AIREML.tol = 1e-6,
     ### Re-fit the model with the new design matrix and start point the varComp
     ## from the provided nullmod object. 
     
-    return(fitNullMod(nullmod$outcome, X, covMatList = covMatList, 
-                        group.idx = nullmod$group.idx, family = nullmod$family$family, start = nullmod$varComp,
-                        AIREML.tol = AIREML.tol, max.iter= max.iter, drop.zeros = drop.zeros, verbose = verbose))     
+    new.nullmod <- fitNullMod(nullmod$outcome, X, covMatList = covMatList, 
+                              group.idx = nullmod$group.idx, family = nullmod$family$family, start = nullmod$varComp,
+                              AIREML.tol = AIREML.tol, max.iter= max.iter, drop.zeros = drop.zeros, verbose = verbose)
     
-    
-    
+    ## add any extra slots
+    extra <- setdiff(names(nullmod), names(new.nullmod))
+    new.nullmod <- c(new.nullmod, nullmod[extra])
+    return(new.nullmod)  
 }
 
 

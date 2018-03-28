@@ -3,7 +3,7 @@
 # n - number of people 
 # g - the number of groups (1 to more). if g == 1 group.idx is ignored. 
 .runWLSgaussian <- function (Y, X, group.idx, start, AIREML.tol,
-                             max.iter,  verbose){
+                             max.iter, verbose){
     n <- length(Y)
     g <- length(group.idx)
     if (g <= 1) stop("group.idx must have length > 1")
@@ -40,24 +40,20 @@
         
         ## just the diagonal - squared root of diagonals, and inverse of diagonals of Sigma.
         cholSigma.diag <- sqrt(diagSigma)
-###        Sigma.inv.diag <- 1/diagSigma
         Sigma.inv <- Diagonal(x=1/diagSigma)
-    
-        lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag, PPY=TRUE)
-
         
+        lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag, PPY=TRUE)
         
         if (verbose)  print(c(sigma2.k, lq$logLikR, lq$RSS))
-        
 
+        
         ## Updating variances and calculating their covariance matrix
         if (reps > 1) {
             
-###            score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
             score.AI <- .calcAIhetvars(lq$PY, lq$PPY, group.idx,
                                        Sigma.inv = Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
-            score    <- score.AI$score
-            AI       <- score.AI$AI
+            score <- score.AI$score
+            AI <- score.AI$AI
             AIinvScore <- solve(AI, score)
 
             sigma2.kplus1 <- sigma2.k + AIinvScore
@@ -80,12 +76,10 @@
             sigma2.kplus1 <- rep(NA, g)
 
             for (i in 1:g) {
-###             	sigma2.kplus1[i] <- (1/n) * (sigma2.k[i]^2 * crossprod(lq$PY[group.idx[[i]]]) + n *sigma2.k[i] - sigma2.k[i]^2 * sum(diag(lq$P)[group.idx[[i]]]))
+                ### sigma2.kplus1[i] <- (1/n) * (sigma2.k[i]^2 * crossprod(lq$PY[group.idx[[i]]]) + n *sigma2.k[i] - sigma2.k[i]^2 * sum(diag(lq$P)[group.idx[[i]]]))
                 covMati <- Diagonal( x=as.numeric( 1:n %in% group.idx[[i]] ) )
                 trPi.part1 <- sum(diag(Sigma.inv)[ group.idx[[i]] ] )
-                trPi.part2 <- sum(diag( 
-                  (crossprod( lq$Sigma.inv_X, covMati) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv 
-                ))
+                trPi.part2 <- sum(diag( (crossprod( lq$Sigma.inv_X, covMati) %*% lq$Sigma.inv_X) %*% lq$Xt_Sigma.inv_X.inv ))
                 trPi <- trPi.part1 - trPi.part2
                 sigma2.kplus1[i] <- as.numeric((1/n)*(sigma2.k[i]^2*crossprod(lq$PY[group.idx[[i]]]) + n*sigma2.k[i] - sigma2.k[i]^2*trPi ))
             }
@@ -101,14 +95,12 @@
     
     ## just the diagonal - squared root of diagonals, and inverse of diagonals of Sigma.
     cholSigma.diag <- sqrt(diagSigma)
-###    Sigma.inv.diag <- 1/diagSigma
     Sigma.inv <- Diagonal(x=1/diagSigma)
     
     lq <- .calcLikelihoodQuantities(Y, X, Sigma.inv, cholSigma.diag, PPY=TRUE)
-###    score.AI <- .calcAIhetvars(lq$P, lq$PY, group.idx)
     score.AI <- .calcAIhetvars(lq$PY, lq$PPY, group.idx,
                                Sigma.inv = Sigma.inv, Sigma.inv_X = lq$Sigma.inv_X, Xt_Sigma.inv_X.inv = lq$Xt_Sigma.inv_X.inv)
-    AI       <- score.AI$AI
+    AI <- score.AI$AI
 
 
     eta <- as.numeric(lq$fits)

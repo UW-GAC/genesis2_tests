@@ -28,9 +28,7 @@
                          0.5 * Rt_Sigma.inv_R/RSS)
     
     ## log likelihood- REML type, accounting for estimation of mean effects.    
-    logLikR <- as.numeric(logLik + 0.5 * k * log(2 * pi *
-                                                 RSS) - sum(log(diag(chol.Xt_Sigma.inv_X))))
-    
+    logLikR <- as.numeric(logLik + 0.5 * k * log(2 * pi * RSS) - sum(log(diag(chol.Xt_Sigma.inv_X))))
     
     ## calculate projection matrix.
 ###    P <- Sigma.inv - tcrossprod(tcrossprod(Sigma.inv_X, Xt_Sigma.inv_X.inv), Sigma.inv_X)
@@ -42,7 +40,6 @@
     } else {
         PPY <- NULL
     }
-###    return(list(P= P, PY = PY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = beta, fits = fits, residM = residM))
     return(list(PY = PY, PPY= PPY, RSS = RSS, logLik = logLik, logLikR = logLikR, Sigma.inv_R  = Sigma.inv_R , Sigma.inv_X = Sigma.inv_X, Xt_Sigma.inv_X.inv = Xt_Sigma.inv_X.inv, beta = as.numeric(beta), fits = fits, residM = residM))
     
 }

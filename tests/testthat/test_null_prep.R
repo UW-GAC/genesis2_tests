@@ -1,129 +1,21 @@
 context("check null model prep")
 
 test_that("nullModelTestPrep", {
-	n <- 100
-	X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
-	y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
+    n <- 100
+    dat <- .testNullInputs(n)
+    geno <- .testGenoMatrix(n)
+    
+    # basic
+    nullmod <- fitNullMod(dat$y, dat$X, verbose=FALSE)
+    Xtilde <- calcXtilde(nullmod, geno)
 
-	cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n, dimnames=list(1:n, 1:n))
-	cor.mat <- crossprod(cor.mat)
+    expect_equal(dim(Xtilde), c(n, ncol(geno)))
+    expect_equal(dim(nullmod$Ytilde), dim(dat$y))
 
-	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
-        
-        # basic
-	nullmod <- fitNullMod(y, X, verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
+    # with covMatList
+    nullmod <- fitNullMod(dat$y, dat$X, dat$cor.mat, verbose=FALSE)
+    Xtilde <- calcXtilde(nullmod, geno)
 
-	expect_equal(dim(Xtilde), c(n, ncol(geno)))
-	expect_equal(dim(nullmod$Ytilde), dim(y))
-
-        # with covMatList
-	nullmod <- fitNullMod(y, X, covMatList=cor.mat, verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
-
-	expect_equal(dim(Xtilde), c(n, ncol(geno)))
-	expect_equal(dim(nullmod$Ytilde), dim(y))
-})
-
-test_that("nullModelTestPrep vs calculateProjection", {
-	n <- 100
-	X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
-	y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
-	
-	group.idx <- list(G1 = c(1:(n/2)), G2 = c((n/2 + 1):n))
-	
-	cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n, dimnames=list(1:n, 1:n))
-	cor.mat <- crossprod(cor.mat)
-
-	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
-        
-        dat <- as.data.frame(cbind(scanID=1:n, y, X, group=1))
-        names(dat)[2:5] <- c("y", paste0("X",1:3))
-        dat$group[group.idx[[2]]] <- 2
-        
-        # basic
-	nullmod <- fitNullMod(y, X, verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
- 
-        nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), verbose=FALSE)
-        proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
-
-        expect_true(all(abs(nullmod$Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
-        
-        # with covMatList
-	nullmod <- fitNullMod(y, X, covMatList=cor.mat, verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
-
-        nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, verbose=FALSE)
-        proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
-
-        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
-        
-        # with group
-	nullmod <- fitNullMod(y, X, group.idx = group.idx, covMatList=cor.mat, verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
-
-        nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, group.var="group", verbose=FALSE)
-        proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
-
-        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
-        
-})
-
-test_that("nullModelTestPrep vs calculateProjection - binary", {
-	n <- 100
-	X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
-	
-	sqrt.cor.mat <- matrix(rnorm(n*n, sd = 0.05),n,n, dimnames=list(1:n, 1:n))
-	cor.mat <- crossprod(sqrt.cor.mat)
-        
-	geno <- matrix(rbinom(200*n, size = 2, prob = 0.2), nrow = n, ncol = 200)
-        
-## reps <- 0
-## varCompZero <- TRUE
-## while(varCompZero & reps < 10){	
-	random.iid <- rnorm(n)
-	random <- crossprod(sqrt.cor.mat*0.05, random.iid)
-	expit <- function(x){exp(x)/(1+exp(x))} 
-	p <- expit(X %*% c(-1, 0.5, 1) + random) 
-	y <- rbinom(n, size = 1, prob = p)
-	
-        dat <- as.data.frame(cbind(scanID=1:n, y, X))
-        names(dat)[2:5] <- c("y", paste0("X",1:3))
-        
-	
-## 	glmm.genesis <- tryCatch({
-## 		GENESIS::fitNullMM(dat, "y", covars = c("X1", "X2", "X3"), covMatList = cor.mat, family = "binomial", verbose=FALSE, maxIter=10)
-## 				}, 
-## 			warning = function(w){return(list(message = "warning"))},
-## 			error = function(e){return(list(message = "error"))}
-## 			)
-## 	if (!is.null(glmm.genesis$message)) next
-## 	if (glmm.genesis$varComp[1] != 0 ) varCompZero <- FALSE
-##         reps <- reps + 1
-## }
-## if (varCompZero) stop("could not generate nonzero varComp")
-
-        # basic
-	nullmod <- fitNullMod(y, X, family="binomial", verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
- 
-        nullmod.orig <- GENESIS::fitNullReg(dat, outcome="y", covars=paste0("X",1:3), family="binomial", verbose=FALSE)
-        proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
-
-        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-9))
-        
-        # with covMatList
-	nullmod <- fitNullMod(y, X, covMatList=cor.mat, family="binomial", verbose=FALSE)
-        Xtilde <- calcXtilde(nullmod, geno)
-
-        nullmod.orig <- GENESIS::fitNullMM(dat, outcome="y", covars=paste0("X",1:3), covMatList=cor.mat, family="binomial", verbose=FALSE)
-        proj <- GENESIS:::.calculateProjection(nullmod.orig, test="", burden.test="")
-
-        expect_true(all(abs(Xtilde - crossprod(proj$Mt, geno)) < 1e-9))
-        expect_true(all(abs(nullmod$resid - proj$resid) < 1e-7))
+    expect_equal(dim(Xtilde), c(n, ncol(geno)))
+    expect_equal(dim(nullmod$Ytilde), dim(dat$y))
 })

@@ -1,5 +1,6 @@
 import(stats)
 import(Matrix)
+importFrom(methods, is)
 
 export(fitNullMod,
        updateNullModOutcome,
