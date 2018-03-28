@@ -1,10 +1,14 @@
 context("check variant set association tests")
 library(bigQF)
 
-.prepNullmod <- function(n, MM=FALSE, binary=FALSE) {
+.prepNullmod <- function(n, MM=FALSE, binary=FALSE, het.var = TRUE) {
     X <- cbind(1, rnorm(n), rbinom(n, size = 1, prob = 0.5))
     if (!binary) {
-	y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
+	if (het.var) {
+		y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = c(rep(4, n/2), rep(2, n/2)))
+		} else{
+			y <- X %*% c(1, 0.5, 1) + rnorm(n, sd = rep(4, n))
+		}
         family <- "gaussian"
     }  else {
         y <- rbinom(n, size = 1, prob = 0.4)
@@ -20,8 +24,12 @@ library(bigQF)
         } else {
             covMatList <- NULL
         }
-	
-	nullmod <- fitNullModel(y, X, covMatList = covMatList, group.idx = group.idx, family=family, verbose=FALSE)
+	if (het.var){
+		nullmod <- fitNullMod(y, X, covMatList = covMatList, group.idx = group.idx, family=family, verbose=FALSE)
+	} else{
+		nullmod <- fitNullMod(y, X, covMatList = covMatList, family=family, verbose=FALSE)
+	}
+	return(nullmod)
 	
 	#
 }
@@ -36,29 +44,36 @@ test_that("SKAT with rho=1 matches burden", {
 
         ## mixed model
         nullmod <- .prepNullmod(n, MM=TRUE)
-	nullprep.1 <- nullModelTestPrep(nullmod)
-        skat.1 <- .testVariantSetSKAT(nullprep.1, geno, weights, rho=0, pval.method="davies")
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0, pval.method="davies")
        
        nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
        skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights) 
         
        expect_true(abs(skat.1$pval_0 - skat.2) < 0.01)
         
-        ## basic
+        ## basic - WLS
         nullmod <- .prepNullmod(n, MM=FALSE)
-	nullprep.1 <- nullModelTestPrep(nullmod)
-        skat.1 <- .testVariantSetSKAT(nullprep.1, geno, weights, rho=0, pval.method="davies")
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0, pval.method="davies")
+       
+       nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
+       skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights) 
+        
+       expect_true(abs(skat.1$pval_0 - skat.2) < 0.01)
+        
+        ## basic linear reg
+        nullmod <- .prepNullmod(n, MM=FALSE, het.var = FALSE)
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0, pval.method="davies")
        
        nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
        skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights) 
         
        expect_true(abs(skat.1$pval_0 - skat.2) < 0.01)
 
+
         
         ## mixed model - binary
 	 nullmod <- .prepNullmod(n, MM=TRUE, binary=TRUE)
-	nullprep.1 <- nullModelTestPrep(nullmod)
-        skat.1 <- .testVariantSetSKAT(nullprep.1, geno, weights, rho=0, pval.method="davies")
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0, pval.method="davies")
        
        nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
        skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights) 
@@ -68,8 +83,7 @@ test_that("SKAT with rho=1 matches burden", {
         
         ## basic - binary
 	nullmod <- .prepNullmod(n, MM=FALSE, binary=TRUE)
-	nullprep.1 <- nullModelTestPrep(nullmod)
-        skat.1 <- .testVariantSetSKAT(nullprep.1, geno, weights, rho=0, pval.method="davies")
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0, pval.method="davies")
        
        nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
        skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights) 
@@ -79,8 +93,7 @@ test_that("SKAT with rho=1 matches burden", {
        
        ### now incorporate rho > 0:
       nullmod <- .prepNullmod(n, MM=TRUE)
-	nullprep.1 <- nullModelTestPrep(nullmod)
-        skat.1 <- .testVariantSetSKAT(nullprep.1, geno, weights, rho=0.5, pval.method="davies")  
+        skat.1 <- .testVariantSetSKAT(nullmod, geno, weights, rho=0.5, pval.method="davies")  
         nullprep.2 <- nullModelFastSKATTestPrep(nullmod)
        skat.2 <- .testVariantSetFastSKAT(nullprep.2, geno, weights, rho = 0.5) 
 
