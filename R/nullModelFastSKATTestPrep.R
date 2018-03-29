@@ -53,7 +53,7 @@ nullModelFastSKATTestPrep <- function(nullmod, threshold = 1e-10){
 	    	sum(s^2)
 	    })
 	    
-	    class(rval) <- c( "matrixfree") ## or famSKAT_genesis?
+	    class(rval) <- c( "matrixfree") 
 	
 		} else{
 			   rval <- list(mult = function(X){
