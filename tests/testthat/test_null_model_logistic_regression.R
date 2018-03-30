@@ -22,7 +22,7 @@ test_that("logistic", {
     expect_equivalent(nullmod$workingY, dat$y)
     expect_equivalent(nullmod$outcome, dat$y)
     expect_equivalent(nullmod$model.matrix, dat$X)
-    expect_equivalent(nullmod$cholSigmaInv, 1/sqrt(fitted(glm.mod)*(1-fitted(glm.mod))))
+    expect_equivalent(diag(nullmod$cholSigmaInv), 1/sqrt(fitted(glm.mod)*(1-fitted(glm.mod))))
     expect_equal(nullmod$converged, glm.mod$converged)
     expect_null(nullmod$zeroFLAG)
     expect_equal(nullmod$RSS, 1)
