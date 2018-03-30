@@ -16,7 +16,7 @@ fitNullMod <- function(y, X, covMatList = NULL, group.idx = NULL, family = "gaus
         # coerce to Matrix objects. should get "dspMatrix" (packed symmetric matrix)
         covMatList <- lapply(covMatList, function(x) {
             x <- Matrix(x)
-            if (is(x, "symmetricMatrix")) x <- pack(x)
+            if (is(x, "symmetricMatrix") & !is(x, "sparseMatrix")) x <- pack(x)
             return(x)
         })
     }
